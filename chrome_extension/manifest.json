@@ -1,0 +1,33 @@
+{
+    "manifest_version": 2,
+
+    "name": "Bach's Editor",
+    "description": "This extension make editor fance.",
+    "version": "1.0",
+
+    "icons": { "128": "icon.png" },
+
+    "permissions": [
+        "tabs", "http://segmentfault.com/*"
+    ],
+    "web_accessible_resources":
+        ["/MIDI.js/soundfont/acoustic_grand_piano-ogg.js"],
+    "content_scripts": [
+        {
+            "matches": ["http://segmentfault.com/*"],
+            "js": [
+                "jquery.js",
+                "MIDI.js/js/MIDI/AudioDetect.js",
+                "MIDI.js/js/MIDI/LoadPlugin.js",
+                "MIDI.js/js/MIDI/Plugin.js",
+                "MIDI.js/js/MIDI/Player.js",
+                "MIDI.js/js/Window/DOMLoader.XMLHttp.js",
+                "MIDI.js/inc/base64.js",
+                "MIDI.js/inc/base64binary.js",
+                "MIDI.js/soundfont/acoustic_grand_piano-ogg.js",
+                "background.js"
+            ]
+        }
+    ],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
