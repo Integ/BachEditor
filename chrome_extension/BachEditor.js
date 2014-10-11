@@ -1,4 +1,5 @@
-var ID = 'lcemhgomgkipbfiedfnahialngolefkg';
+var ID = 'lcemhgomgkipbfiedfnahialngolefkg';     // dev
+//var ID = 'miaoejdhedghfddhcabgbmfdjglniipc';        // product
 var keyMap = {
     96 : 100, 49 : 102, 50 : 104, 51 : 106, 52 : 108, 53 : 110, 54 : 112, 55 : 114, 56 : 116, 57 : 118, 48: 120, 45: 122, 61: 124,
     126: 101, 33 : 103, 64 : 105, 35 : 107, 36 : 109, 37 : 111, 94 : 113, 38 : 115, 42 : 117, 40 : 119, 41: 121, 95: 123, 43: 125,
@@ -19,14 +20,34 @@ MIDI.loadPlugin({
     callback: function() {
         var delay = 0; // play one note every quarter second
         var velocity = 127; // how hard the note hits play the note
+        var count1 = 0;
+        var count2 = 0;
         MIDI.setVolume(0, 127);
-        $('textarea, input').keypress(function(e) {
-            var tone = keyMap[e.which] - 13;
-            //+ MIDI.pianoKeyOffset;
-            MIDI.noteOn(0, tone, velocity, delay);
-            MIDI.noteOff(0, tone, delay + 0.75);
+        $('textarea, input').on('keypress', function(e) {
+            count1++;
+            if(e.which === 32) {
+                var tone = parseInt(Math.random()*(107 - 25) + 25);
+                MIDI.noteOn(0, tone, velocity, delay);
+                MIDI.noteOff(0, tone, delay + 0.75);
+            } else {
+                var tone = keyMap[e.which] - 13;
+                //+ MIDI.pianoKeyOffset;
+                MIDI.noteOn(0, tone, velocity, delay);
+                MIDI.noteOff(0, tone, delay + 0.75);
+            }
             console.log("Bach's Editor: ", tone);
         });
         
+        $('textarea, input').on('input', function(e) {
+            count2++;
+            if(count1 !== count2) {
+                var tone = parseInt(Math.random()*(107 - 25) + 25);
+                MIDI.noteOn(0, tone, velocity, delay);
+                MIDI.noteOff(0, tone, delay + 0.75);
+                console.log("Bach's Editor: ", tone);
+                count1 = 0;
+                count2 = 0;
+            }
+        });
     }
 });
