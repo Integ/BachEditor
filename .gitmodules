@@ -1,0 +1,3 @@
+[submodule "MIDI.js"]
+  path = chrome_extension/MIDI.js
+  url = git@github.com:mudcube/MIDI.js.git
