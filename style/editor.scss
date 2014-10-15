@@ -59,7 +59,7 @@
     cursor: pointer;
     display: block;
     border: 5px solid #f6f6f6;
-    @include box-sizing(content-box);
+    box-sizing: content-box;
     width: 20px;
     height: 20px;
     background-repeat: no-repeat;
@@ -212,7 +212,6 @@
   height: auto;
   min-height: 420px;
   padding: 0;
-  font-family: $font-family-sans-serif;
   .CodeMirror-scroll {
     height: 100%;
     min-height: 420px;
@@ -221,7 +220,6 @@
     height: 20px !important;
   }
   .CodeMirror-lines {
-    font-family: $font-family-monospace;
   }
 }
 
@@ -265,7 +263,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   $color-rgba: rgba(red(#66afe9), green(#66afe9), blue(#66afe9), .6);
   border-color: #66afe9;
   outline: 0;
-  @include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 }
 
 :-webkit-full-screen {
@@ -298,7 +296,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   transition: left 0.1s ease;
   code, pre, kbd {
     background-color: #eee !important;
-    font-family: $font-family-monospace;
   }
 }
 .editor-preview-active {
