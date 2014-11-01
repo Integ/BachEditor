@@ -200,14 +200,14 @@ $(function() {
                 parserDelay = setTimeout(function() {
                     var text = cm.getValue();
                     $('#editorLive').html(marked(text));
-                    //highLight($('#editorLive'));
+                    highLight($('#editorLive'));
                 }, 500);
             }
             if($('.editor-preview-active.onlive').length) {
                 parserDelay = setTimeout(function() {
                     var text = cm.getValue();
                     $('.editor-preview-active.onlive').html(marked(text));
-                    //highLight($('.editor-preview-active.onlive'));
+                    highLight($('.editor-preview-active.onlive'));
                 }, 500);
             }
             // 用户第一次输入@时
@@ -1043,7 +1043,7 @@ $(document).ready(function () {\n\
             cm.focus();
             var text = cm.getValue();
             $('#editorLive').html(marker(text));
-            //highLight($('#editorLive'));
+            highLight($('#editorLive'));
 
             $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
                 var _isFull = document.isfullScreen || document.mozFullScreen || document.webkitIsFullScreen;
@@ -1600,7 +1600,7 @@ $(document).ready(function () {\n\
              }, 1);
         } else {
             preview.innerHTML = marked(text);
-            //highLight($(preview));
+            highLight($(preview));
                     /* When the preview button is clicked for the first time,
                      * give some time for the transition from editor.css to fire and the view to slide from right to left,
                      * instead of just appearing.
@@ -1661,7 +1661,7 @@ $(document).ready(function () {\n\
                 $(preview).addClass('editor-preview-active onlive');
                 // var _w = $('.CodeMirror-code').width() / 2 - 15 + 'px';
                 $('.CodeMirror-code').css('width', _w);
-                //highLight($(preview));
+                highLight($(preview));
             }, 1);
         }
         lastText = text;

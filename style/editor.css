@@ -1,4 +1,3 @@
-@import url(../../3rd/codemirror/lib/codemirror.css);
 .editor {
   position: relative;
   z-index: 1;
@@ -54,7 +53,7 @@
     height: 20px;
     background-repeat: no-repeat;
     background-size: 380px 60px;
-    background-image: url(../img/editor/editor@2x.png);
+    background-image: url(../images/editor@2x.png);
     text-indent: -9999px; }
   .editor__menu a.muted,
   .editor__menu a.muted:hover {
@@ -308,4 +307,3 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .editor-preview > p {
   margin-top: 0; }
 
-/*# sourceMappingURL=editor.css.map */
