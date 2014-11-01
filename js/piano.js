@@ -13,7 +13,7 @@ $(function() {
         90 : 33, 88 : 35, 67: 37, 86 : 39, 66: 41, 78 : 43, 77 : 45, 60: 47, 62: 49, 63: 51,
     };
     MIDI.loadPlugin({
-        soundfontUrl: "/js/MIDI.js/soundfont/", //acoustic_grand_piano-ogg.js",
+        soundfontUrl: "js/MIDI.js/soundfont/", //acoustic_grand_piano-ogg.js",
         //instrument: 1 // (default)
         callback: function() {
             var delay = 0; // play one note every quarter second
