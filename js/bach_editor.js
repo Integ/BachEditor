@@ -1499,7 +1499,7 @@ $(document).ready(function () {\n\
             show: function() {
                 // fileupload
                 $('#editorUpload').fileUpload({
-                    url: '/img/upload/image',
+                    url: 'http://api.t.sina.com.cn/statuses/upload',
                     type: 'POST',
                     dataType: 'text',
                     beforeSend: function() {
@@ -1533,21 +1533,8 @@ $(document).ready(function () {\n\
                 if($('#remotePic').hasClass('active') && $('#remotePicUrl').val()) {
                     $('#remotePicUrl').addClass('loading');
                     $('.done-btn').attr('disabled', 'disabled');
-                    _fileName = $('#remotePicUrl').val()
-                        .match(/\/([^/]+)$/)[1];
-                    $.post('/img/fetch/image', {src: $('#remotePicUrl').val()}, function(result) {
-                        $('.done-btn').attr('disabled', false);
-                        $('#remotePicUrl').removeClass('loading');
-                        var status = result.match(/\[(\d),/)[1];
-                        var data = result.match(/\[\d,"(\S*)"\]/)[1]
-                            data = data.replace(/\\/g, '');
-                        if(status !== '0') {
-                            sfModal(data);
-                        } else {
-                            imgLink = data;
-                            insertPic();
-                        }
-                    }, 'text');
+                    imgLink = $('#remotePicUrl').val();
+                    insertPic();
                 } else {
                     insertPic();
                 }

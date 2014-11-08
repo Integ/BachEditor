@@ -310,3 +310,19 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 .editor-preview pre.hljs {
     padding: 10px;
 }
+
+.widget-upload {
+    position: relative;
+}
+.widget-upload .widget-upload__file {
+    position: absolute;
+    opacity: 0;
+    width: 85%;
+    height: 100%;
+    z-index: 10;
+    cursor: pointer;
+}
+
+input.loading {
+  background: url(/images/loader.gif) no-repeat right center;
+}
