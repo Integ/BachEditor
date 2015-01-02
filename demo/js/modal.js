@@ -1,12 +1,24 @@
-/**
- * sfmodal.js
- * 处理弹窗
- * @Author fakefish
- **/
+'use strict';
 
-define(['jquery', 'template'],function($, temp) {
-    'use strict';
-    return function(option) {
+function temp(template, data) {
+    var str = template || '';
+    // Convert the template into string
+    $.each(data, function(key, val){
+        var _type = typeof val,
+            re = new RegExp('{{\\s*' + key + '\\s*}}', 'g');
+        if (_type === 'object' && val !== null){
+            $.each(val, function(k, v){
+                var r = new RegExp('{{\\s*' + key + '.' + k + '\\s*}}', 'g');
+                str = str.replace(r, v);
+            });
+        } else {
+            str = str.replace(re, val);
+        }
+    });
+    return str;
+};
+
+function sfModal(option) {
     if(typeof option !== 'object') {
         if(option === 'hide') {
             $('.sfmodal').modal('hide');
@@ -29,10 +41,10 @@ define(['jquery', 'template'],function($, temp) {
         wrapper      : null,      //编辑器全屏时不能显示modal
         $content   : null,
         hideClose  : false,
-        closeText  : '关闭',
+        closeText  : '取消',
         // closeFn : function() {},
         hideDone   : false,
-        doneText   : '好的',
+        doneText   : '确认',
         doneFn     : function() {
             $('.sfmodal').modal('hide');
         },
@@ -97,4 +109,3 @@ define(['jquery', 'template'],function($, temp) {
         }
     });
 };
-});

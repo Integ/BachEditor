@@ -4,11 +4,12 @@
  * $wrap为空时对所有pre标签执行高亮
  **/
 
-define(['jquery', 'highlightjs', 'ZeroClipboard', 'math'],
-function($, hljs, ZeroClipboard, math){
+//define(['jquery', 'highlightjs', 'ZeroClipboard', 'math'],
+//function($, hljs, ZeroClipboard, math){
+$(function() {
     'use strict';
 
-    return function($wrap) {
+    window.highLight = function($wrap) {
         //highlight
         // detect highlight.js
         if ('undefined' === typeof(hljs)) {
@@ -70,54 +71,53 @@ function($, hljs, ZeroClipboard, math){
             }
 
             //添加行号
-            // t.wrap('<table class="widget-highlight"><tbody><tr><td class="widget-highlight--code"></td></tr></tbody></table>');    //包上table
-            // var _$wrap = t.parents('.widget-highlight tr');     // tr
-            // _$wrap.prepend('<td class="widget-highlight--line"></td>'); //插入行号的td
-            // var _totalLine = t.height() / 15;
-            // var _$lines = _$wrap.find('.widget-highlight--line');
-            // // var _$code = _$wrap.find('.widget-highlight--code');
-            // var _width = t.parents('.widget-highlight').parent().width();
-            // if(_totalLine < 10) {
-            //     _$lines.css('width', '16px');
-            //     // _$code.css('width', _width - 16 + 'px');
-            //     t.css('width', _width - 32 + 'px');
-            // } else if(_totalLine < 100) {
-            //     _$lines.css('width', '32px');
-            //     // _$code.css('width', _width - 32 + 'px');
-            //     t.css('width', _width - 40 + 'px');
-            // } else {
-            //     _$lines.css('width', '48px');
-            //     // _$code.css('width', _width - 48 + 'px');
-            //     t.css('width', _width - 51 + 'px');
-            // }
-            // // 黑魔法 dangerous
-            // if(_totalLine < 17) {
-            //     _totalLine = t.height() / 15;
-            // } else if(_totalLine < 27) {
-            //     _totalLine = (t.height() - 10) / 15;
-            // } else if(_totalLine < 55) {
-            //     _totalLine = (t.height() - 20) / 15;
-            // } else if(_totalLine < 55) {
-            //     _totalLine = (t.height() - 40) / 15;
-            // } else {
-            //     _totalLine = (t.height() + 15) / 16;
-            // }
-            // for(var line = 1; line < _totalLine; line++) {
-            //     var _h = '<p>' + line + '</p>';
-            //     _$lines.append(_h);
-            // }
-            //
-            // _$lines.attr('unselectable', 'on')      //禁止选中行号
-            //     .css('user-select', 'none')
-            //     .on('selectstart', false);
+            t.wrap('<table class="widget-highlight"><tbody><tr><td class="widget-highlight--code"></td></tr></tbody></table>');    //包上table
+            var _$wrap = t.parents('.widget-highlight tr');     // tr
+            _$wrap.prepend('<td class="widget-highlight--line"></td>'); //插入行号的td
+            var _totalLine = t.height() / 15;
+            var _$lines = _$wrap.find('.widget-highlight--line');
+            // var _$code = _$wrap.find('.widget-highlight--code');
+            var _width = t.parents('.widget-highlight').parent().width();
+            if(_totalLine < 10) {
+                _$lines.css('width', '16px');
+                // _$code.css('width', _width - 16 + 'px');
+                t.css('width', _width - 32 + 'px');
+            } else if(_totalLine < 100) {
+                _$lines.css('width', '32px');
+                // _$code.css('width', _width - 32 + 'px');
+                t.css('width', _width - 40 + 'px');
+            } else {
+                _$lines.css('width', '48px');
+                // _$code.css('width', _width - 48 + 'px');
+                t.css('width', _width - 51 + 'px');
+            }
+            // 黑魔法 dangerous
+            if(_totalLine < 17) {
+                _totalLine = t.height() / 15;
+            } else if(_totalLine < 27) {
+                _totalLine = (t.height() - 10) / 15;
+            } else if(_totalLine < 55) {
+                _totalLine = (t.height() - 20) / 15;
+            } else if(_totalLine < 55) {
+                _totalLine = (t.height() - 40) / 15;
+            } else {
+                _totalLine = (t.height() + 15) / 16;
+            }
+            for(var line = 1; line < _totalLine; line++) {
+                var _h = '<p>' + line + '</p>';
+                _$lines.append(_h);
+            }
+            
+            _$lines.attr('unselectable', 'on')      //禁止选中行号
+                .css('user-select', 'none')
+                .on('selectstart', false);
 
             // 添加copy
             // var _$parent = _$wrap.parents('.widget-highlight');
             if(navigator.plugins['Shockwave Flash'] || new ActiveXObject('ShockwaveFlash.shockwaveFlash')) {
                 var _$clip = $('<span class="widget-clipboard hidden"></span>');
                 t.prepend(_$clip);
-                var _staticUrl = $('link[rel="stylesheet"]').attr('href').split('/')[2];
-                ZeroClipboard.config({ swfPath: '//' + _staticUrl + '/3rd/zeroclipboard/dist/ZeroClipboard.swf' });
+                ZeroClipboard.config({ swfPath: '//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.1.6/ZeroClipboard.swf' });
                 var _client = new ZeroClipboard(_$clip);
                 var _e = $('#global-zeroclipboard-html-bridge');
                 _client.on('load', function() {

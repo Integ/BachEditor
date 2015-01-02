@@ -1,8 +1,10 @@
 [BachEditor](http://integ.github.io/BachEditor)
 ==========
-http://integ.github.io/BachEditor
+
+v0.1.0
+
+[Demo](http://integ.github.io/BachEditor)
+
+inspire by [Lepture's Editor](http://lab.lepture.com/editor/)
 
 一个有情怀的编辑器。Bach's Editor.
-
-暂时只有一个chrome的插件
-https://chrome.google.com/webstore/detail/bachs-browser/miaoejdhedghfddhcabgbmfdjglniipc

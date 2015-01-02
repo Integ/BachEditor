@@ -10,8 +10,7 @@
  * @author integ@segmentfault.com
  **/
 
-define(['jquery', 'codemirror', 'sfModal', 'template', 'highLight', 'highlightjs', 'caret', 'codemirror_markdown', 'fileUpload'],
-function($, CodeMirror, sfModal, template, highLight, hljs) {
+$(function() {
     'use strict';
 
     /**
@@ -26,6 +25,7 @@ function($, CodeMirror, sfModal, template, highLight, hljs) {
         }, options);
         this.options = options;
     }
+    window.Editor = Editor;
 
     // 默认的状态栏
     Editor.statusbar = ['lines', 'words', 'cursor'];
@@ -197,23 +197,15 @@ function($, CodeMirror, sfModal, template, highLight, hljs) {
             if($('#editorLive').length) {
                 parserDelay = setTimeout(function() {
                     var text = cm.getValue();
-                    $.post('/api/user', {do: 'markdown', text: text}, function(d) {
-                        if(d.status === 0) {
-                            $('#editorLive').html(d.data);
-                            highLight($('#editorLive'));
-                        }
-                    });
+                    $('#editorLive').html(marked(text));
+                    highLight($('#editorLive'));
                 }, 500);
             }
             if($('.editor-preview-active.onlive').length) {
                 parserDelay = setTimeout(function() {
                     var text = cm.getValue();
-                    $.post('/api/user', {do: 'markdown', text: text}, function(d) {
-                        if(d.status === 0) {
-                            $('.editor-preview-active.onlive').html(d.data);
-                            highLight($('.editor-preview-active.onlive'));
-                        }
-                    });
+                    $('.editor-preview-active.onlive').html(marked(text));
+                    highLight($('.editor-preview-active.onlive'));
                 }, 500);
             }
             // 用户第一次输入@时
@@ -551,6 +543,48 @@ function($, CodeMirror, sfModal, template, highLight, hljs) {
                 }
             }
         }
+
+        // mario
+        var velocity = 127; // how hard the note hits
+        var marioKeys = ['E4', 'E4', 'E4', 'C4', 'E4', 'G4', 'G3',
+            'C4', 'G3', 'E3', 'A3', 'B3', 'Ab3', 'A3', 'G3', 'E4', 'G4', 'A4', 'F4', 'G4', 'E4', 'C4', 'D4', 'B3',
+            'C4', 'G3', 'E3', 'A3', 'B3', 'Ab3', 'A3', 'G3', 'E4', 'G4', 'A4', 'F4', 'G4', 'E4', 'C4', 'D4', 'B3',
+            'G4', 'F4', 'E4', 'Db4', 'E4', 'Gb3', 'A3', 'C4', 'A3', 'C4', 'D4', 'G4', 'F4', 'E4', 'Db4', 'E4', 'C5', 'C5', 'C5',
+            'G4', 'F4', 'E4', 'Db4', 'E4', 'Gb3', 'A3', 'C4', 'A3', 'C4', 'D4', 'Db4', 'D4', 'C4',
+            'C4', 'C4', 'C4', 'C4', 'D4', 'E4', 'C4', 'A3', 'G3', 'C4', 'C4', 'C4', 'C4', 'D4', 'E4',
+            'C4', 'C4', 'C4', 'C4', 'D4', 'E4', 'C4', 'A3', 'G3'
+        ]; // the MIDI note
+        var marioTimes = [
+            8, 4, 4, 8, 4, 2, 2,
+            3, 3, 3, 4, 4, 8, 4, 8, 8, 8, 4, 8, 4, 3, 8, 8, 3,
+            3, 3, 3, 4, 4, 8, 4, 8, 8, 8, 4, 8, 4, 3, 8, 8, 2,
+            8, 8, 8, 4, 4, 8, 8, 4, 8, 8, 3, 8, 8, 8, 4, 4, 4, 8, 2,
+            8, 8, 8, 4, 4, 8, 8, 4, 8, 8, 3, 3, 3, 1,
+            8, 4, 4, 8, 4, 8, 4, 8, 2, 8, 4, 4, 8, 4, 1,
+            8, 4, 4, 8, 4, 8, 4, 8, 2
+        ];
+
+        MIDI.loadPlugin({
+            targetFormat: 'mp3',
+            soundfontUrl: '/js/',
+            instrument: 'marimba',
+            callback: function() {
+                MIDI.setVolume(0, 127);
+                MIDI.programChange(0, 12);
+                var cur = 0;
+                $(el).keypress(function() {
+                    var delay = 1.3 / marioTimes[cur]; // play one note every quarter second
+                    var note = MIDI.keyToNote[marioKeys[cur]];
+                    MIDI.noteOn(0, note, velocity, 0);
+                    MIDI.noteOff(0, note, delay);
+                    if(cur >= 96) {
+                        cur = 0;
+                    }else {
+                        cur++;
+                    }
+                });
+            }
+        });
 
         if(callback) {      // 有callback时执行
             callback(self);
@@ -1048,12 +1082,8 @@ $(document).ready(function () {\n\
             }
             cm.focus();
             var text = cm.getValue();
-            $.post('/api/user', {do: 'markdown', text: text}, function(d) {
-                if(d.status === 0) {
-                    $('#editorLive').html(d.data);
-                    highLight($('#editorLive'));
-                }
-            });
+            $('#editorLive').html(marker(text));
+            highLight($('#editorLive'));
 
             $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
                 var _isFull = document.isfullScreen || document.mozFullScreen || document.webkitIsFullScreen;
@@ -1509,7 +1539,7 @@ $(document).ready(function () {\n\
             show: function() {
                 // fileupload
                 $('#editorUpload').fileUpload({
-                    url: '/img/upload/image',
+                    url: 'http://api.t.sina.com.cn/statuses/upload',
                     type: 'POST',
                     dataType: 'text',
                     beforeSend: function() {
@@ -1543,21 +1573,8 @@ $(document).ready(function () {\n\
                 if($('#remotePic').hasClass('active') && $('#remotePicUrl').val()) {
                     $('#remotePicUrl').addClass('loading');
                     $('.done-btn').attr('disabled', 'disabled');
-                    _fileName = $('#remotePicUrl').val()
-                        .match(/\/([^/]+)$/)[1];
-                    $.post('/img/fetch/image', {src: $('#remotePicUrl').val()}, function(result) {
-                        $('.done-btn').attr('disabled', false);
-                        $('#remotePicUrl').removeClass('loading');
-                        var status = result.match(/\[(\d),/)[1];
-                        var data = result.match(/\[\d,"(\S*)"\]/)[1]
-                            data = data.replace(/\\/g, '');
-                        if(status !== '0') {
-                            sfModal(data);
-                        } else {
-                            imgLink = data;
-                            insertPic();
-                        }
-                    }, 'text');
+                    imgLink = $('#remotePicUrl').val();
+                    insertPic();
                 } else {
                     insertPic();
                 }
@@ -1609,20 +1626,15 @@ $(document).ready(function () {\n\
                  $(preview).addClass('editor-preview-active')
              }, 1);
         } else {
-            $.post('/api/user', {do: 'markdown', text: text}, function(d) {
-                if(d.status === 0) {
-                    preview.innerHTML = d.data;
-                    highLight($(preview));
+            preview.innerHTML = marked(text);
+            highLight($(preview));
                     /* When the preview button is clicked for the first time,
                      * give some time for the transition from editor.css to fire and the view to slide from right to left,
                      * instead of just appearing.
                      */
-                    setTimeout(function() {
-                        $(preview).addClass('editor-preview-active')
-                    }, 1);
-
-                }
-            });
+            setTimeout(function() {
+                $(preview).addClass('editor-preview-active')
+            }, 1);
         }
         $('.editor__menu--edit').removeClass('muted');
         $('.editor__menu--preview').addClass('muted');
@@ -1671,17 +1683,13 @@ $(document).ready(function () {\n\
                 $('.CodeMirror-code').css('width', _w);
             }, 1);
         } else {
-            $.post('/api/user', {do: 'markdown', text: text}, function(d) {
-                if(d.status === 0) {
-                    preview.innerHTML = d.data;
-                    setTimeout(function() {
-                        $(preview).addClass('editor-preview-active onlive');
-                        // var _w = $('.CodeMirror-code').width() / 2 - 15 + 'px';
-                        $('.CodeMirror-code').css('width', _w);
-                        highLight($(preview));
-                    }, 1);
-                }
-            });
+            preview.innerHTML = marked(text);
+            setTimeout(function() {
+                $(preview).addClass('editor-preview-active onlive');
+                // var _w = $('.CodeMirror-code').width() / 2 - 15 + 'px';
+                $('.CodeMirror-code').css('width', _w);
+                highLight($(preview));
+            }, 1);
         }
         lastText = text;
         $('.editor__menu li:lt(17)').removeClass('invisible');    //显示菜单按钮
