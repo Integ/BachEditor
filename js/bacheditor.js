@@ -566,7 +566,7 @@ $(function() {
 
         MIDI.loadPlugin({
             targetFormat: 'mp3',
-            soundfontUrl: '/js/',
+            soundfontUrl: '/BachEditor/js/',
             instrument: 'marimba',
             callback: function() {
                 MIDI.setVolume(0, 127);
