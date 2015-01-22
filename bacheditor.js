@@ -119,7 +119,7 @@ $(function() {
     };
 
     /**
-     * get the value of the Editor
+     * get the parsed value of the Editor
      * myEditor.getHTML();
      **/
     Editor.prototype.getHTML = function() {
