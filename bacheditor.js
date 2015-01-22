@@ -119,6 +119,15 @@ $(function() {
     };
 
     /**
+     * get the value of the Editor
+     * myEditor.getHTML();
+     **/
+    Editor.prototype.getHTML = function() {
+        var cm = this.codemirror;
+        return marked(cm.getValue());
+    };
+
+    /**
      * set the value of the Editor
      * myEditor.setVal(text);
      **/
