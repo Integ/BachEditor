@@ -1,0 +1,24 @@
+{
+  "name": "BachEditor",
+  "dependencies": {
+    "necolas/normalize.css": "^3.0.2",
+    "components/jquery": "^2.1.4",
+    "eldargab/codemirror": "*",
+    "eldargab/codemirror-markdown-mode": "*",
+    "components/bootstrap": "^3.3.5",
+    "components/bootstrap-default": "^3.3.5",
+    "chjj/marked": "~0.3.3",
+    "btd/highlightjs": "^7.5.0"
+  },
+  "scripts": [
+    "js/index.js",
+    "js/bacheditor.js",
+    "js/MIDI.js",
+    "js/highlight.js"
+  ],
+  "main": "js/index.js",
+  "styles": [
+    "css/index.css",
+    "css/editor.css"
+  ]
+}
