@@ -53,7 +53,7 @@
     height: 20px;
     background-repeat: no-repeat;
     background-size: 380px 60px;
-    background-image: url(../images/editor@2x.png);
+    background-image: url(../../../images/editor@2x.png);
     text-indent: -9999px; }
   .editor__menu a.muted,
   .editor__menu a.muted:hover {
@@ -160,7 +160,6 @@
 
 .CodeMirror {
   height: auto;
-  min-height: 420px;
   padding: 0; }
   .CodeMirror .CodeMirror-scroll {
     height: 100%;
@@ -325,4 +324,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 
 input.loading {
   background: url(/images/loader.gif) no-repeat right center;
+}
+
+.widget-highlight--line p {
+  margin-bottom: 0;
 }

@@ -1,0 +1,13 @@
+{
+  "name": "codemirror-markdown-mode",
+  "version": "3.16.1",
+  "description": "Markdown mode for CodeMirror",
+  "keywords": [
+    "markdown",
+    "codemirror"
+  ],
+  "scripts": [
+    "index.js"
+  ],
+  "repository": "eldargab/codemirror-markdown-mode"
+}
