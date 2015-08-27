@@ -25,5 +25,9 @@
     "mocha": "^2.2.5",
     "mocha-phantomjs": "^3.5.3",
     "phantomjs": "^1.9.17"
+  },
+  "devDependencies": {
+    "webpack": "^1.11.0",
+    "webpack-dev-server": "^1.10.1"
   }
 }
