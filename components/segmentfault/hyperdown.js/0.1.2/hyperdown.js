@@ -121,7 +121,7 @@
 	    }, {
 	        key: 'makeHolder',
 	        value: function makeHolder(str) {
-	            var key = '|' + this.uniqid + this.id + '|';
+	            var key = '|\r' + this.uniqid + this.id + '\r|';
 	            this.id++;
 	            this.holders[key] = str;
 	            return key;
@@ -240,10 +240,16 @@
 	    }, {
 	        key: 'releaseHolder',
 	        value: function releaseHolder(text) {
-	            for (var key in this.holders) {
-	                var value = this.holders[key];
-	                text = text.replace(key, value);
+
+	            var deep = 0;
+	            while (text.indexOf("|\r") !== -1 && deep < 10) {
+	                for (var key in this.holders) {
+	                    var value = this.holders[key];
+	                    text = text.replace(key, value);
+	                }
+	                deep++;
 	            }
+
 	            this.holders.clear();
 
 	            return text;
@@ -339,15 +345,19 @@
 	            }
 
 	            // escape
-	            var escapeMatches = /\\(`|\*|_)/.exec(text);
+	            var escapeMatches = /\\(`|\*|_|~)/.exec(text);
 	            if (escapeMatches) {
 	                text = this.makeHolder(this.htmlspecialchars(escapeMatches[1]));
 	            }
 
 	            // strong and em and some fuck
-	            text = text.replace(/(_|\*){3}(.+?)\1{3}/, "<strong><em>$2</em></strong>");
-	            text = text.replace(/(_|\*){2}(.+?)\1{2}/, "<strong>$2</strong>");
-	            text = text.replace(/(_|\*)(.+?)\1/, "<em>$2</em>");
+	            text = text.replace(/(\*{3})(.+?)\1/, "<strong><em>$2</em></strong>");
+	            text = text.replace(/(\*{2})(.+?)\1/, "<strong>$2</strong>");
+	            text = text.replace(/(\*)(.+?)\1/, "<em>$2</em>");
+	            text = text.replace(/(\s+)(_{3})(.+?)\2(\s+)/, "$1<strong><em>$3</em></strong>$4");
+	            text = text.replace(/(\s+)(_{2})(.+?)\2(\s+)/, "$1<strong>$3</strong>$4");
+	            text = text.replace(/(\s+)(_)(.+?)\2(\s+)/, "$1<em>$3</em>$4");
+	            text = text.replace(/(~{2})(.+?)\1/, "<del>$2</del>");
 	            text = text.replace(/<(https?:\/\/.+)>/i, "<a href=\"$1\">$1</a>");
 	            text = text.replace(/<([_a-z0-9-\.\+]+@[^@]+\.[a-z]{2,})>/i, "<a href=\"mailto:$1\">$1</a>");
 
@@ -358,6 +368,7 @@
 
 	            // release
 	            text = this.releaseHolder(text);
+
 	            text = this.call('afterParseInline', text);
 
 	            return text;
@@ -380,13 +391,27 @@
 	            var emptyCount = 0;
 	            // analyze by line
 	            for (var key in lines) {
+	                key = parseInt(key); // ES6 的 bug for key in Array 循环时返回的 key 是字符串，不是 int
 	                var line = lines[key];
 	                // code block is special
-	                if (matches = line.match(/^(~|`){3,}([^`~]*)$/i)) {
+	                if (matches = line.match(/^(\s*)(~|`){3,}([^`~]*)$/i)) {
 	                    if (this.isBlock('code')) {
-	                        this.setBlock(key).endBlock();
+	                        var block = this.getBlock();
+	                        var isAfterList = block[3][2];
+
+	                        if (isAfterList) {
+	                            this.combineBlock().setBlock(key);
+	                        } else {
+	                            this.setBlock(key).endBlock();
+	                        }
 	                    } else {
-	                        this.startBlock('code', key, matches[2]);
+	                        var isAfterList = false;
+	                        if (this.isBlock('list')) {
+	                            var block = this.getBlock();
+	                            var space = block[3];
+	                            isAfterList = space > 0 && matches[1].length >= space || matches[1].length > space;
+	                        }
+	                        this.startBlock('code', key, [matches[1], matches[3], isAfterList]);
 	                    }
 	                    continue;
 	                } else if (this.isBlock('code')) {
@@ -398,9 +423,9 @@
 	                var htmlPattern1 = new RegExp('^\s*<(' + special + ')(\s+[^>]*)?>', 'i');
 	                var htmlPattern2 = new RegExp('<\/(' + special + ')>\s*$', 'i');
 	                if (matches = line.match(htmlPattern1)) {
-	                    tag = matches[1].toLowerCase();
-	                    if (!this.isBlock('html', tag) && !this.isBlock('pre')) {
-	                        this.startBlock('html', key, tag);
+	                    var _tag = matches[1].toLowerCase();
+	                    if (!this.isBlock('html', _tag) && !this.isBlock('pre')) {
+	                        this.startBlock('html', key, _tag);
 	                    }
 
 	                    continue;
@@ -421,8 +446,9 @@
 	                    // list
 	                    case /^(\s*)((?:[0-9a-z]\.)|\-|\+|\*)\s+/.test(line):
 	                        var matches = line.match(/^(\s*)((?:[0-9a-z]\.)|\-|\+|\*)\s+/);
+
 	                        var listSpace = matches[1].length;
-	                        var emptyCount = 0;
+	                        emptyCount = 0;
 
 	                        // opened
 	                        if (this.isBlock('list')) {
@@ -446,8 +472,17 @@
 	                        this.startBlock('definition', key).endBlock();
 	                        break;
 
+	                    // block quote
+	                    case /^\s*>/.test(line):
+	                        if (this.isBlock('quote')) {
+	                            this.setBlock(key);
+	                        } else {
+	                            this.startBlock('quote', key);
+	                        }
+	                        break;
+
 	                    // pre
-	                    case /^ {4,}/.test(line):
+	                    case /^ {4}/.test(line):
 	                        emptyCount = 0;
 	                        if (this.isBlock('pre')) {
 	                            this.setBlock(key);
@@ -539,15 +574,6 @@
 	                        }
 	                        break;
 
-	                    // block quote
-	                    case /^>/.test(line):
-	                        if (this.isBlock('quote')) {
-	                            this.setBlock(key);
-	                        } else {
-	                            this.startBlock('quote', key);
-	                        }
-	                        break;
-
 	                    // hr
 	                    case /^[-\*]{3,}\s*$/.test(line):
 	                        this.startBlock('hr', key).endBlock();
@@ -567,7 +593,7 @@
 	                                }
 
 	                                emptyCount++;
-	                            } else if (emptyCount == 0) {
+	                            } else if (emptyCount === 0) {
 	                                this.setBlock(key);
 	                            } else {
 	                                this.startBlock('normal', key);
@@ -600,7 +626,7 @@
 	                            }
 	                        } else {
 	                            var block = this.getBlock();
-	                            if (!block || !block.length || block[0] !== 'normal') {
+	                            if (block === null || block.length === 0 || block[0] !== 'normal') {
 	                                this.startBlock('normal', key);
 	                            } else {
 	                                this.setBlock(key);
@@ -644,12 +670,12 @@
 	                }
 
 	                if ('normal' === type) {
-	                    // one sigle empty line
-	                    if (from === to && lines[from].match(/^\s*$/) && prevBlock && nextBlock) {
+	                    // combine two splitted list
+	                    if (from === to && lines[from].match(/^\s*$/) && prevBlock.length && nextBlock.length) {
 	                        if (prevBlock[0] === 'list' && nextBlock[0] === 'list') {
 	                            // combine 3 blocks
 	                            blocks[key - 1] = ['list', prevBlock[1], nextBlock[2], null];
-	                            array_splice(blocks, key, 2);
+	                            blocks.splice(key, 2);
 	                        }
 	                    }
 	                }
@@ -667,12 +693,26 @@
 	         */
 	    }, {
 	        key: 'parseCode',
-	        value: function parseCode(lines, lang) {
+	        value: function parseCode(lines, parts) {
+	            var _parts = _slicedToArray(parts, 2);
+
+	            var blank = _parts[0];
+	            var lang = _parts[1];
+
 	            lang = lang.trim();
-	            lines = lines.slice(1, -1);
+	            var count = blank.length;
+
+	            if (!/^[_a-z0-9-\+\#]+$/i.test(lang)) {
+	                lang = null;
+	            }
+
+	            lines = lines.slice(1, -1).map(function (line) {
+	                var pattern = new RegExp('/^[ ]{' + count + '}/');
+	                return line.replace(pattern, '');
+	            });
 	            var str = lines.join('\n');
 
-	            return (/^\s*$/.test(str) ? '' : '<pre><code' + (lang ? ' class="' + lang + '"' : '') + '>' + this.htmlspecialchars(lines.join("\n")) + '</code></pre>'
+	            return (/^\s*$/.test(str) ? '' : '<pre><code' + (lang ? ' class="' + lang + '"' : '') + '>' + this.htmlspecialchars(lines.join('\n')) + '</code></pre>'
 	            );
 	        }
 
@@ -764,7 +804,7 @@
 	        key: 'parseQuote',
 	        value: function parseQuote(lines) {
 	            lines.forEach(function (line, key) {
-	                lines[key] = line.replace(/^> ?/, '');
+	                lines[key] = line.replace(/^\s*> ?/, '');
 	            });
 	            var str = lines.join('\n');
 	            return (/^\s*$/.test(str) ? '' : '<blockquote>' + this.parse(str) + '</blockquote>'
@@ -913,62 +953,53 @@
 	            var ignore = head ? 1 : 0;
 
 	            var html = '<table>';
-	            var body = null;
+	            var body = false;
 
-	            for (var key in lines) {
+	            var _loop = function (key) {
 	                var line = lines[key];
 	                if (key === ignore) {
 	                    head = false;
 	                    body = true;
-	                    continue;
+	                    return 'continue';
 	                }
+
+	                if (line) {
+	                    line = line.trim();
+	                }
+
 	                if (line[0] === '|') {
 	                    line = line.substr(1);
+
 	                    if (line[line.length - 1] === '|') {
 	                        line = line.substr(0, -1);
 	                    }
 	                }
 
-	                line = line.replace(/^(\|?)(.*?)\1$/, "$2", line);
-	                var rows = line.split('|').map(function (item) {
-	                    return item.trim();
+	                var rows = line.split('|').map(function (row) {
+	                    if (row.match(/^\s+$/)) {
+	                        return ' ';
+	                    } else {
+	                        return row.trim();
+	                    }
 	                });
+
 	                var columns = [];
 	                var last = -1;
 
-	                var _iteratorNormalCompletion5 = true;
-	                var _didIteratorError5 = false;
-	                var _iteratorError5 = undefined;
-
-	                try {
-	                    for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                        var row = _step5.value;
-
-	                        if (row.length > 0) {
-	                            last++;
-	                            columns[last] = [1, row];
-	                        } else if (columns[last]) {
-	                            columns[last][0]++;
-	                        }
+	                rows.forEach(function (row) {
+	                    if (row.length > 0) {
+	                        last++;
+	                        columns[last] = [columns[last] ? columns[last][0] + 1 : 1, row];
+	                    } else if (columns[last]) {
+	                        columns[last][0]++;
+	                    } else {
+	                        columns[0] = [1, row];
 	                    }
-	                } catch (err) {
-	                    _didIteratorError5 = true;
-	                    _iteratorError5 = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-	                            _iterator5['return']();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError5) {
-	                            throw _iteratorError5;
-	                        }
-	                    }
-	                }
+	                });
 
-	                if (head) {
+	                if (head === true) {
 	                    html += '<thead>';
-	                } else if (body) {
+	                } else if (body === true) {
 	                    html += '<tbody>';
 	                }
 
@@ -1001,6 +1032,12 @@
 	                } else if (body) {
 	                    body = false;
 	                }
+	            };
+
+	            for (var key in lines) {
+	                var _ret = _loop(key);
+
+	                if (_ret === 'continue') continue;
 	            }
 
 	            if (body !== null) {
@@ -1033,11 +1070,11 @@
 	        value: function parseNormal(lines) {
 	            var _this3 = this;
 
-	            lines.forEach(function (line, key) {
-	                lines[key] = _this3.parseInline(line);
+	            lines = lines.map(function (line) {
+	                return _this3.parseInline(line);
 	            });
 
-	            var str = lines.join("\n");
+	            var str = lines.join("\n").trim();
 	            str = str.replace(/(\n\s*){2,}/, "</p><p>");
 	            str = str.replace(/\n/, "<br>");
 
@@ -1093,27 +1130,27 @@
 	    }, {
 	        key: 'parseHtml',
 	        value: function parseHtml(lines, type) {
-	            var _iteratorNormalCompletion6 = true;
-	            var _didIteratorError6 = false;
-	            var _iteratorError6 = undefined;
+	            var _iteratorNormalCompletion5 = true;
+	            var _didIteratorError5 = false;
+	            var _iteratorError5 = undefined;
 
 	            try {
-	                for (var _iterator6 = lines[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-	                    var line = _step6.value;
+	                for (var _iterator5 = lines[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                    var line = _step5.value;
 
 	                    line = this.parseInline(line, this.specialWhiteList[type] ? this.specialWhiteList[type] : '');
 	                }
 	            } catch (err) {
-	                _didIteratorError6 = true;
-	                _iteratorError6 = err;
+	                _didIteratorError5 = true;
+	                _iteratorError5 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-	                        _iterator6['return']();
+	                    if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+	                        _iterator5['return']();
 	                    }
 	                } finally {
-	                    if (_didIteratorError6) {
-	                        throw _iteratorError6;
+	                    if (_didIteratorError5) {
+	                        throw _iteratorError5;
 	                    }
 	                }
 	            }
@@ -1270,6 +1307,28 @@
 	                return map[m];
 	            });
 	        }
+
+	        /**
+	         * @return this
+	         */
+	    }, {
+	        key: 'combineBlock',
+	        value: function combineBlock() {
+	            if (this.pos < 1) {
+	                return this;
+	            }
+
+	            var prev = this.blocks[this.pos - 1];
+	            var current = this.blocks[this.pos];
+
+	            prev[2] = current[2];
+	            this.blocks[this.pos - 1] = prev;
+	            this.current = prev[0];
+	            unset(this.blocks[this.pos]);
+	            this.pos--;
+
+	            return this;
+	        }
 	    }]);
 
 	    return Parser;
@@ -1278,6 +1337,7 @@
 	exports['default'] = Parser;
 	module.exports = exports['default'];
 	window.HyperDown = Parser;
+
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {

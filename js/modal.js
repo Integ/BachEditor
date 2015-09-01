@@ -1,4 +1,6 @@
 'use strict';
+var $ = require('jquery');
+// require('bootstrap');
 
 function temp(template, data) {
     var str = template || '';
@@ -109,3 +111,4 @@ function sfModal(option) {
         }
     });
 };
+module.exports = sfModal;

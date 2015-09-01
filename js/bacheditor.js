@@ -14,8 +14,9 @@ var $ = require("jquery");
 require('hyperdown');
 var hyperdown = new HyperDown();
 var highLight = require('./highlight');
-require("codemirror");
+require('codemirror');
 require('codemirror-markdown-mode');
+var sfModal = require('./modal');
 
 /**
  * Interface of Editor.

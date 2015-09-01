@@ -7,14 +7,15 @@
     "eldargab/codemirror-markdown-mode": "*",
     "components/bootstrap": "^3.3.5",
     "components/bootstrap-default": "^3.3.5",
-    "segmentfault/hyperdown.js": "^0.0.2",
+    "segmentfault/hyperdown.js": "^0.1.2",
     "btd/highlightjs": "^7.5.0"
   },
   "scripts": [
     "js/index.js",
     "js/bacheditor.js",
     "js/MIDI.js",
-    "js/highlight.js"
+    "js/highlight.js",
+    "js/modal.js"
   ],
   "main": "js/index.js",
   "styles": [

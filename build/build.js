@@ -20277,7 +20277,7 @@ if (typeof jQuery === 'undefined') {
 
 });
 
-require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
+require.register("segmentfault~hyperdown.js@0.1.2", function (exports, module) {
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -20401,7 +20401,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'makeHolder',
 	        value: function makeHolder(str) {
-	            var key = '|' + this.uniqid + this.id + '|';
+	            var key = '|\r' + this.uniqid + this.id + '\r|';
 	            this.id++;
 	            this.holders[key] = str;
 	            return key;
@@ -20520,32 +20520,14 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'releaseHolder',
 	        value: function releaseHolder(text) {
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
 
-	            try {
-	                for (var _iterator = this.holders.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var _step$value = _slicedToArray(_step.value, 2);
-
-	                    var key = _step$value[0];
-	                    var value = _step$value[1];
-
+	            var deep = 0;
+	            while (text.indexOf("|\r") !== -1 && deep < 10) {
+	                for (var key in this.holders) {
+	                    var value = this.holders[key];
 	                    text = text.replace(key, value);
 	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator['return']) {
-	                        _iterator['return']();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
+	                deep++;
 	            }
 
 	            this.holders.clear();
@@ -20587,7 +20569,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            text = text.replace('<', '&lt;');
 	            text = text.replace('>', '&gt;');
 
-	            var footnotePattern = new RegExp("[^((?:[^]]|\]|\[)+?)]");
+	            var footnotePattern = /\[\^((?:[^\]]|\]|\[)+?)\]/;
 	            var footnoteMatches = footnotePattern.exec(text);
 	            if (footnoteMatches) {
 	                var id = this.footnotes.indexOf(footnoteMatches[1]);
@@ -20601,7 +20583,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            }
 
 	            // image
-	            var imagePattern1 = new RegExp("/!\[((?:[^\]]|\]|\[)*?)\]\(((?:[^\)]|\)|\()+?)\)/");
+	            var imagePattern1 = /!\[((?:[^\]]|\]|\[)*?)\]\(((?:[^\)]|\)|\()+?)\)/;
 	            var imageMatches1 = imagePattern1.exec(text);
 	            if (imageMatches1) {
 	                var escaped = this.escapeBracket(imageMatches1[1]);
@@ -20609,7 +20591,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                text = this.makeHolder('<img src="' + url + '" alt="' + escaped + '" title="' + escaped + '">');
 	            }
 
-	            var imagePattern2 = new RegExp("!\[((?:[^\]]|\]|\[)*?)\]\[((?:[^\]]|\]|\[)+?)\]");
+	            var imagePattern2 = /!\[((?:[^\]]|\]|\[)*?)\]\[((?:[^\]]|\]|\[)+?)\]/;
 	            var imageMatches2 = imagePattern2.exec(text);
 	            if (imageMatches2) {
 	                var escaped = this.escapeBracket(imageMatches2[1]);
@@ -20623,15 +20605,16 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            }
 
 	            // link
-	            var linkPattern1 = new RegExp("\[((?:[^\]]|\]|\[)+?)\]\(((?:[^\)]|\)|\()+?)\)");
+	            var linkPattern1 = /\[((?:[^\]]|\]|\[)+?)\]\(((?:[^\)]|\)|\()+?)\)/;
 	            var linkMatches1 = linkPattern1.exec(text);
+
 	            if (linkMatches1) {
 	                var escaped = this.escapeBracket(linkMatches1[1]);
 	                var url = this.escapeBracket(linkMatches1[2]);
 	                text = this.makeHolder('<a href="' + url + '">' + escaped + '</a>');
 	            }
 
-	            var linkPattern2 = new RegExp("\[((?:[^\]]|\]|\[)+?)\]\[((?:[^\]]|\]|\[)+?)\]");
+	            var linkPattern2 = /\[((?:[^\]]|\]|\[)+?)\]\[((?:[^\]]|\]|\[)+?)\]/;
 	            var linkMatches2 = linkPattern2.exec(text);
 	            if (linkMatches2) {
 	                var escaped = this.escapeBracket(linkMatches2[1]);
@@ -20642,25 +20625,30 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            }
 
 	            // escape
-	            var escapeMatches = /\\(`|\*|_)/.exec(text);
+	            var escapeMatches = /\\(`|\*|_|~)/.exec(text);
 	            if (escapeMatches) {
 	                text = this.makeHolder(this.htmlspecialchars(escapeMatches[1]));
 	            }
 
 	            // strong and em and some fuck
-	            text = text.replace(/(_|\*){2}(.+?)\1{2}/, "<strong><em>$2</em></strong>");
-	            text = text.replace(/(_|\*){1}(.+?)\1{1}/, "<strong>$2</strong>");
-	            text = text.replace(/(_|\*)(.+?)\1/, "<em>$2</em>");
+	            text = text.replace(/(\*{3})(.+?)\1/, "<strong><em>$2</em></strong>");
+	            text = text.replace(/(\*{2})(.+?)\1/, "<strong>$2</strong>");
+	            text = text.replace(/(\*)(.+?)\1/, "<em>$2</em>");
+	            text = text.replace(/(\s+)(_{3})(.+?)\2(\s+)/, "$1<strong><em>$3</em></strong>$4");
+	            text = text.replace(/(\s+)(_{2})(.+?)\2(\s+)/, "$1<strong>$3</strong>$4");
+	            text = text.replace(/(\s+)(_)(.+?)\2(\s+)/, "$1<em>$3</em>$4");
+	            text = text.replace(/(~{2})(.+?)\1/, "<del>$2</del>");
 	            text = text.replace(/<(https?:\/\/.+)>/i, "<a href=\"$1\">$1</a>");
 	            text = text.replace(/<([_a-z0-9-\.\+]+@[^@]+\.[a-z]{2,})>/i, "<a href=\"mailto:$1\">$1</a>");
 
-	            // autolink
+	            // autolink url
 	            text = text.replace(/(^|[^"])((http|https|ftp|mailto):[_a-z0-9-\.\/%#@\?\+=~\|\,]+)($|[^"])/i, "$1<a href=\"$2\">$2</a>$4");
 
 	            text = this.call('afterParseInlineBeforeRelease', text);
 
 	            // release
 	            text = this.releaseHolder(text);
+
 	            text = this.call('afterParseInline', text);
 
 	            return text;
@@ -20683,13 +20671,27 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            var emptyCount = 0;
 	            // analyze by line
 	            for (var key in lines) {
+	                key = parseInt(key); // ES6 的 bug for key in Array 循环时返回的 key 是字符串，不是 int
 	                var line = lines[key];
 	                // code block is special
-	                if (matches = line.match(/^(~|`){3,}([^`~]*)$/i)) {
+	                if (matches = line.match(/^(\s*)(~|`){3,}([^`~]*)$/i)) {
 	                    if (this.isBlock('code')) {
-	                        this.setBlock(key).endBlock();
+	                        var block = this.getBlock();
+	                        var isAfterList = block[3][2];
+
+	                        if (isAfterList) {
+	                            this.combineBlock().setBlock(key);
+	                        } else {
+	                            this.setBlock(key).endBlock();
+	                        }
 	                    } else {
-	                        this.startBlock('code', key, matches[2]);
+	                        var isAfterList = false;
+	                        if (this.isBlock('list')) {
+	                            var block = this.getBlock();
+	                            var space = block[3];
+	                            isAfterList = space > 0 && matches[1].length >= space || matches[1].length > space;
+	                        }
+	                        this.startBlock('code', key, [matches[1], matches[3], isAfterList]);
 	                    }
 	                    continue;
 	                } else if (this.isBlock('code')) {
@@ -20701,9 +20703,9 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                var htmlPattern1 = new RegExp('^\s*<(' + special + ')(\s+[^>]*)?>', 'i');
 	                var htmlPattern2 = new RegExp('<\/(' + special + ')>\s*$', 'i');
 	                if (matches = line.match(htmlPattern1)) {
-	                    tag = matches[1].toLowerCase();
-	                    if (!this.isBlock('html', tag) && !this.isBlock('pre')) {
-	                        this.startBlock('html', key, tag);
+	                    var _tag = matches[1].toLowerCase();
+	                    if (!this.isBlock('html', _tag) && !this.isBlock('pre')) {
+	                        this.startBlock('html', key, _tag);
 	                    }
 
 	                    continue;
@@ -20724,8 +20726,9 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                    // list
 	                    case /^(\s*)((?:[0-9a-z]\.)|\-|\+|\*)\s+/.test(line):
 	                        var matches = line.match(/^(\s*)((?:[0-9a-z]\.)|\-|\+|\*)\s+/);
+
 	                        var listSpace = matches[1].length;
-	                        var emptyCount = 0;
+	                        emptyCount = 0;
 
 	                        // opened
 	                        if (this.isBlock('list')) {
@@ -20749,8 +20752,17 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                        this.startBlock('definition', key).endBlock();
 	                        break;
 
+	                    // block quote
+	                    case /^\s*>/.test(line):
+	                        if (this.isBlock('quote')) {
+	                            this.setBlock(key);
+	                        } else {
+	                            this.startBlock('quote', key);
+	                        }
+	                        break;
+
 	                    // pre
-	                    case /^ {4,}/.test(line):
+	                    case /^ {4}/.test(line):
 	                        emptyCount = 0;
 	                        if (this.isBlock('pre')) {
 	                            this.setBlock(key);
@@ -20783,13 +20795,13 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 
 	                            var rows = tableMatches[1].split(/(\+|\|)/);
 	                            var aligns = [];
-	                            var _iteratorNormalCompletion2 = true;
-	                            var _didIteratorError2 = false;
-	                            var _iteratorError2 = undefined;
+	                            var _iteratorNormalCompletion = true;
+	                            var _didIteratorError = false;
+	                            var _iteratorError = undefined;
 
 	                            try {
-	                                for (var _iterator2 = rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                                    var row = _step2.value;
+	                                for (var _iterator = rows[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                                    var row = _step.value;
 
 	                                    var align = 'none';
 
@@ -20806,16 +20818,16 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                                    aligns.push(align);
 	                                }
 	                            } catch (err) {
-	                                _didIteratorError2 = true;
-	                                _iteratorError2 = err;
+	                                _didIteratorError = true;
+	                                _iteratorError = err;
 	                            } finally {
 	                                try {
-	                                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-	                                        _iterator2['return']();
+	                                    if (!_iteratorNormalCompletion && _iterator['return']) {
+	                                        _iterator['return']();
 	                                    }
 	                                } finally {
-	                                    if (_didIteratorError2) {
-	                                        throw _iteratorError2;
+	                                    if (_didIteratorError) {
+	                                        throw _iteratorError;
 	                                    }
 	                                }
 	                            }
@@ -20842,15 +20854,6 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                        }
 	                        break;
 
-	                    // block quote
-	                    case /^>/.test(line):
-	                        if (this.isBlock('quote')) {
-	                            this.setBlock(key);
-	                        } else {
-	                            this.startBlock('quote', key);
-	                        }
-	                        break;
-
 	                    // hr
 	                    case /^[-\*]{3,}\s*$/.test(line):
 	                        this.startBlock('hr', key).endBlock();
@@ -20870,7 +20873,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                                }
 
 	                                emptyCount++;
-	                            } else if (emptyCount == 0) {
+	                            } else if (emptyCount === 0) {
 	                                this.setBlock(key);
 	                            } else {
 	                                this.startBlock('normal', key);
@@ -20903,7 +20906,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                            }
 	                        } else {
 	                            var block = this.getBlock();
-	                            if (!block || !block.length || block[0] !== 'normal') {
+	                            if (block === null || block.length === 0 || block[0] !== 'normal') {
 	                                this.startBlock('normal', key);
 	                            } else {
 	                                this.setBlock(key);
@@ -20947,12 +20950,12 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                }
 
 	                if ('normal' === type) {
-	                    // one sigle empty line
-	                    if (from === to && lines[from].match(/^\s*$/) && prevBlock && nextBlock) {
+	                    // combine two splitted list
+	                    if (from === to && lines[from].match(/^\s*$/) && prevBlock.length && nextBlock.length) {
 	                        if (prevBlock[0] === 'list' && nextBlock[0] === 'list') {
 	                            // combine 3 blocks
 	                            blocks[key - 1] = ['list', prevBlock[1], nextBlock[2], null];
-	                            array_splice(blocks, key, 2);
+	                            blocks.splice(key, 2);
 	                        }
 	                    }
 	                }
@@ -20970,12 +20973,26 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	         */
 	    }, {
 	        key: 'parseCode',
-	        value: function parseCode(lines, lang) {
+	        value: function parseCode(lines, parts) {
+	            var _parts = _slicedToArray(parts, 2);
+
+	            var blank = _parts[0];
+	            var lang = _parts[1];
+
 	            lang = lang.trim();
-	            lines = lines.slice(1, -1);
+	            var count = blank.length;
+
+	            if (!/^[_a-z0-9-\+\#]+$/i.test(lang)) {
+	                lang = null;
+	            }
+
+	            lines = lines.slice(1, -1).map(function (line) {
+	                var pattern = new RegExp('/^[ ]{' + count + '}/');
+	                return line.replace(pattern, '');
+	            });
 	            var str = lines.join('\n');
 
-	            return (/^\s*$/.test(str) ? '' : '<pre><code' + (lang ? ' class="' + lang + '"' : '') + '>' + this.htmlspecialchars(lines.join("\n")) + '</code></pre>'
+	            return (/^\s*$/.test(str) ? '' : '<pre><code' + (lang ? ' class="' + lang + '"' : '') + '>' + this.htmlspecialchars(lines.join('\n')) + '</code></pre>'
 	            );
 	        }
 
@@ -20988,27 +21005,27 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'parsePre',
 	        value: function parsePre(lines) {
-	            var _iteratorNormalCompletion3 = true;
-	            var _didIteratorError3 = false;
-	            var _iteratorError3 = undefined;
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
 
 	            try {
-	                for (var _iterator3 = lines[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                    var line = _step3.value;
+	                for (var _iterator2 = lines[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var line = _step2.value;
 
 	                    line = this.htmlspecialchars(line.substr(4));
 	                }
 	            } catch (err) {
-	                _didIteratorError3 = true;
-	                _iteratorError3 = err;
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-	                        _iterator3['return']();
+	                    if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+	                        _iterator2['return']();
 	                    }
 	                } finally {
-	                    if (_didIteratorError3) {
-	                        throw _iteratorError3;
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
 	                    }
 	                }
 	            }
@@ -21067,7 +21084,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	        key: 'parseQuote',
 	        value: function parseQuote(lines) {
 	            lines.forEach(function (line, key) {
-	                lines[key] = line.replace(/^> ?/, '');
+	                lines[key] = line.replace(/^\s*> ?/, '');
 	            });
 	            var str = lines.join('\n');
 	            return (/^\s*$/.test(str) ? '' : '<blockquote>' + this.parse(str) + '</blockquote>'
@@ -21083,8 +21100,6 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'parseList',
 	        value: function parseList(lines) {
-	            var _this2 = this;
-
 	            var html = '';
 	            var minSpace = 99999;
 	            var rows = [];
@@ -21094,7 +21109,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                var matches = line.match(/^(\s*)((?:[0-9a-z]\.?)|\-|\+|\*)(\s+)(.*)$/);
 	                if (matches) {
 	                    var space = matches[1].length;
-	                    var type = -1 !== matches[2].indexOf('+-*') ? 'ul' : 'ol';
+	                    var type = /[\+\-\*]/.test(matches[2]) ? 'ul' : 'ol';
 	                    minSpace = Math.min(space, minSpace);
 
 	                    rows.push([space, type, line, matches[4]]);
@@ -21105,6 +21120,39 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 
 	            var found = false;
 	            var secondMinSpace = 99999;
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var row = _step3.value;
+
+	                    if (Array.isArray(row) && row[0] != minSpace) {
+	                        secondMinSpace = Math.min(secondMinSpace, row[0]);
+	                        found = true;
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+	                        _iterator3['return']();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
+
+	            secondMinSpace = found ? 0 : minSpace;
+
+	            var lastType = '';
+	            var leftLines = [];
+
 	            var _iteratorNormalCompletion4 = true;
 	            var _didIteratorError4 = false;
 	            var _iteratorError4 = undefined;
@@ -21113,9 +21161,36 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                for (var _iterator4 = rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
 	                    var row = _step4.value;
 
-	                    if (Array.isArray(row) && row[0] != minSpace) {
-	                        secondMinSpace = Math.min(secondMinSpace, row[0]);
-	                        found = true;
+	                    if (Array.isArray(row)) {
+	                        var _row = _slicedToArray(row, 4);
+
+	                        var space = _row[0];
+	                        var type = _row[1];
+	                        var line = _row[2];
+	                        var text = _row[3];
+
+	                        if (space !== minSpace) {
+	                            var pattern = new RegExp("^\s{" + secondMinSpace + "}");
+	                            leftLines.push(line.replace(pattern, ''));
+	                        } else {
+	                            if (lastType !== type) {
+	                                if (lastType.length) {
+	                                    html += '</' + lastType + '>';
+	                                }
+
+	                                html += '<' + type + '>';
+	                            }
+
+	                            if (leftLines.length) {
+	                                html += "<li>" + this.parse(leftLines.join("\n")) + "</li>";
+	                            }
+
+	                            leftLines = [text];
+	                            lastType = type;
+	                        }
+	                    } else {
+	                        var pattern = new RegExp("^\s{" + secondMinSpace + "}");
+	                        leftLines.push(row.replace(pattern, ''));
 	                    }
 	                }
 	            } catch (err) {
@@ -21133,46 +21208,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                }
 	            }
 
-	            secondMinSpace = found || minSpace;
-
-	            var lastType = '';
-	            var leftLines = [];
-
-	            rows.forEach(function (row) {
-	                if (Array.isArray(row)) {
-	                    var _row = _slicedToArray(row, 4);
-
-	                    var space = _row[0];
-	                    var type = _row[1];
-	                    var line = _row[2];
-	                    var text = _row[3];
-
-	                    if (space !== minSpace) {
-	                        var pattern = new RegExp("^\s{" + secondMinSpace + "}");
-	                        leftLines.push(line.replace(pattern, ''));
-	                    } else {
-	                        if (lastType !== type) {
-	                            if (lastType) {
-	                                html += '</' + lastType + '>';
-	                            }
-
-	                            html += '<' + type + '>';
-	                        }
-
-	                        if (leftLines) {
-	                            html += "<li>" + _this2.parse(leftLines.join("\n")) + "</li>";
-	                        }
-
-	                        leftLines = [text];
-	                        lastType = type;
-	                    }
-	                } else {
-	                    var pattern = new RegExp("^\s{" + secondMinSpace + "}");
-	                    leftLines.push(row.replace(pattern, ''));
-	                }
-	            });
-
-	            if (leftLines) {
+	            if (leftLines.length) {
 	                html += "<li>" + this.parse(leftLines.join("\n")) + ('</li></' + lastType + '>');
 	            }
 
@@ -21187,7 +21223,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'parseTable',
 	        value: function parseTable(lines, value) {
-	            var _this3 = this;
+	            var _this2 = this;
 
 	            var _value = _slicedToArray(value, 2);
 
@@ -21197,62 +21233,53 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	            var ignore = head ? 1 : 0;
 
 	            var html = '<table>';
-	            var body = null;
+	            var body = false;
 
-	            for (var key in lines) {
+	            var _loop = function (key) {
 	                var line = lines[key];
 	                if (key === ignore) {
 	                    head = false;
 	                    body = true;
-	                    continue;
+	                    return 'continue';
 	                }
+
+	                if (line) {
+	                    line = line.trim();
+	                }
+
 	                if (line[0] === '|') {
 	                    line = line.substr(1);
+
 	                    if (line[line.length - 1] === '|') {
 	                        line = line.substr(0, -1);
 	                    }
 	                }
 
-	                line = line.replace(/^(\|?)(.*?)\1$/, "$2", line);
-	                var rows = line.split('|').map(function (item) {
-	                    return item.trim();
+	                var rows = line.split('|').map(function (row) {
+	                    if (row.match(/^\s+$/)) {
+	                        return ' ';
+	                    } else {
+	                        return row.trim();
+	                    }
 	                });
+
 	                var columns = [];
 	                var last = -1;
 
-	                var _iteratorNormalCompletion5 = true;
-	                var _didIteratorError5 = false;
-	                var _iteratorError5 = undefined;
-
-	                try {
-	                    for (var _iterator5 = rows[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                        var row = _step5.value;
-
-	                        if (row.length > 0) {
-	                            last++;
-	                            columns[last] = [1, row];
-	                        } else if (columns[last]) {
-	                            columns[last][0]++;
-	                        }
+	                rows.forEach(function (row) {
+	                    if (row.length > 0) {
+	                        last++;
+	                        columns[last] = [columns[last] ? columns[last][0] + 1 : 1, row];
+	                    } else if (columns[last]) {
+	                        columns[last][0]++;
+	                    } else {
+	                        columns[0] = [1, row];
 	                    }
-	                } catch (err) {
-	                    _didIteratorError5 = true;
-	                    _iteratorError5 = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-	                            _iterator5['return']();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError5) {
-	                            throw _iteratorError5;
-	                        }
-	                    }
-	                }
+	                });
 
-	                if (head) {
+	                if (head === true) {
 	                    html += '<thead>';
-	                } else if (body) {
+	                } else if (body === true) {
 	                    html += '<tbody>';
 	                }
 
@@ -21275,7 +21302,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                        html += ' align="' + aligns[key] + '"';
 	                    }
 
-	                    html += '>' + _this3.parseInline(text) + ('</' + tag + '>');
+	                    html += '>' + _this2.parseInline(text) + ('</' + tag + '>');
 	                });
 
 	                html += '</tr>';
@@ -21285,6 +21312,12 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                } else if (body) {
 	                    body = false;
 	                }
+	            };
+
+	            for (var key in lines) {
+	                var _ret = _loop(key);
+
+	                if (_ret === 'continue') continue;
 	            }
 
 	            if (body !== null) {
@@ -21315,13 +21348,13 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'parseNormal',
 	        value: function parseNormal(lines) {
-	            var _this4 = this;
+	            var _this3 = this;
 
-	            lines.forEach(function (line, key) {
-	                lines[key] = _this4.parseInline(line);
+	            lines = lines.map(function (line) {
+	                return _this3.parseInline(line);
 	            });
 
-	            var str = lines.join("\n");
+	            var str = lines.join("\n").trim();
 	            str = str.replace(/(\n\s*){2,}/, "</p><p>");
 	            str = str.replace(/\n/, "<br>");
 
@@ -21377,27 +21410,27 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'parseHtml',
 	        value: function parseHtml(lines, type) {
-	            var _iteratorNormalCompletion6 = true;
-	            var _didIteratorError6 = false;
-	            var _iteratorError6 = undefined;
+	            var _iteratorNormalCompletion5 = true;
+	            var _didIteratorError5 = false;
+	            var _iteratorError5 = undefined;
 
 	            try {
-	                for (var _iterator6 = lines[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-	                    var line = _step6.value;
+	                for (var _iterator5 = lines[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                    var line = _step5.value;
 
 	                    line = this.parseInline(line, this.specialWhiteList[type] ? this.specialWhiteList[type] : '');
 	                }
 	            } catch (err) {
-	                _didIteratorError6 = true;
-	                _iteratorError6 = err;
+	                _didIteratorError5 = true;
+	                _iteratorError5 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-	                        _iterator6['return']();
+	                    if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+	                        _iterator5['return']();
 	                    }
 	                } finally {
-	                    if (_didIteratorError6) {
-	                        throw _iteratorError6;
+	                    if (_didIteratorError5) {
+	                        throw _iteratorError5;
 	                    }
 	                }
 	            }
@@ -21412,11 +21445,13 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	    }, {
 	        key: 'escapeBracket',
 	        value: function escapeBracket(str) {
-	            str = str.replace('\[', '[');
-	            str = str.replace('\]', ']');
-	            str = str.replace('\(', '(');
-	            str = str.replace('\)', ')');
-	            return str;
+	            if (str) {
+	                str = str.replace('\[', '[');
+	                str = str.replace('\]', ']');
+	                str = str.replace('\(', '(');
+	                str = str.replace('\)', ')');
+	                return str;
+	            }
 	        }
 
 	        /**
@@ -21552,6 +21587,28 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	                return map[m];
 	            });
 	        }
+
+	        /**
+	         * @return this
+	         */
+	    }, {
+	        key: 'combineBlock',
+	        value: function combineBlock() {
+	            if (this.pos < 1) {
+	                return this;
+	            }
+
+	            var prev = this.blocks[this.pos - 1];
+	            var current = this.blocks[this.pos];
+
+	            prev[2] = current[2];
+	            this.blocks[this.pos - 1] = prev;
+	            this.current = prev[0];
+	            unset(this.blocks[this.pos]);
+	            this.pos--;
+
+	            return this;
+	        }
 	    }]);
 
 	    return Parser;
@@ -21560,6 +21617,7 @@ require.register("segmentfault~hyperdown.js@0.0.2", function (exports, module) {
 	exports['default'] = Parser;
 	module.exports = exports['default'];
 	window.HyperDown = Parser;
+
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
@@ -21968,11 +22026,12 @@ require.register("BachEditor/js/bacheditor.js", function (exports, module) {
  **/
 
 var $ = require("components~jquery@2.1.4");
-require('segmentfault~hyperdown.js@0.0.2');
+require('segmentfault~hyperdown.js@0.1.2');
 var hyperdown = new HyperDown();
 var highLight = require('BachEditor/js/highlight.js');
-require("eldargab~codemirror@master");
+require('eldargab~codemirror@master');
 require('eldargab~codemirror-markdown-mode@master');
+var sfModal = require('BachEditor/js/modal.js');
 
 /**
  * Interface of Editor.
@@ -23839,6 +23898,124 @@ var highLight = function($wrap) {
     }
 };
 module.exports = highLight;
+
+});
+
+require.register("BachEditor/js/modal.js", function (exports, module) {
+'use strict';
+var $ = require('components~jquery@2.1.4');
+// require('bootstrap');
+
+function temp(template, data) {
+    var str = template || '';
+    // Convert the template into string
+    $.each(data, function(key, val){
+        var _type = typeof val,
+            re = new RegExp('{{\\s*' + key + '\\s*}}', 'g');
+        if (_type === 'object' && val !== null){
+            $.each(val, function(k, v){
+                var r = new RegExp('{{\\s*' + key + '.' + k + '\\s*}}', 'g');
+                str = str.replace(r, v);
+            });
+        } else {
+            str = str.replace(re, val);
+        }
+    });
+    return str;
+};
+
+function sfModal(option) {
+    if(typeof option !== 'object') {
+        if(option === 'hide') {
+            $('.sfmodal').modal('hide');
+            return;
+        } else if(option === 'toggle') {
+            $('.sfmodal').modal('toggle');
+            return;
+        } else {
+            option = {
+                content : option,
+                hideDone : true,
+            };
+        }
+    }
+
+    var OPT = $.extend({
+        hideTitle  : false,
+        title      : '警告：前方高能！',
+        content    : '玩脱了',
+        wrapper      : null,      //编辑器全屏时不能显示modal
+        $content   : null,
+        hideClose  : false,
+        closeText  : '取消',
+        // closeFn : function() {},
+        hideDone   : false,
+        doneText   : '确认',
+        doneFn     : function() {
+            $('.sfmodal').modal('hide');
+        },
+        show       : function() {},
+        // 不明原因shown不触发
+        shown      : function() {},
+        hide       : function() {},
+        hidden     : function() {},
+        loaded     : function() {}
+    }, option);
+
+    var dom = '<div class="sfmodal modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">\
+  <div class="modal-dialog">\
+    <div class="modal-content">\
+      '+(OPT.hideTitle ? '' : '<div class="modal-header">\
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>\
+        <h4 class="modal-title">{{title}}</h4>\
+      </div>')+'<div class="modal-body">\
+        <p class="sfModal-content">\
+          </div>\
+          <div class="modal-footer">'
+            + (OPT.hideClose ? '' : '<button type="button" class="btn btn-default" data-dismiss="modal">{{closeText}}</button>')
+            + (OPT.hideDone ? '' : '<button type="button" class="btn btn-primary done-btn">{{doneText}}</button>')+'</div>\
+        </div>\
+      </div>\
+    </div>';
+
+    // 删掉已经存在的modal
+    if ($('.sfmodal').length > 0) {
+        $('.sfmodal').remove();
+        $('.modal-backdrop').remove();
+    }
+    // 有$wrap时插到$wrap里面
+    if(OPT.wrapper) {
+        $(OPT.wrapper).append(temp(dom, OPT));
+        $(OPT.wrapper).append('<div class="modal-backdrop in"></div>');
+    } else {
+        $('body').append(temp(dom, OPT));
+    }
+    if(OPT.$content) {      // 优先使用$content
+        $('.sfmodal .sfModal-content').append(OPT.$content);
+    } else {
+        $('.sfmodal .sfModal-content').html(OPT.content);
+    }
+    $('.sfmodal').modal({keyboard: true});
+    $('.sfmodal')
+        .on('show.bs.modal'  , OPT.show)
+        .on('shown.bs.modal' , OPT.shown)
+        .on('hide.bs.modal'  , function(e) {
+            OPT.hide(e);
+            if(OPT.wrapper) {
+                $('.modal-backdrop').remove();
+            }
+        })
+        .on('hidden.bs.modal', OPT.hidden)
+        .on('loaded.bs.modal', OPT.loaded)
+        .modal('show');     // 一定要先绑事件，然后再show
+    $('.sfmodal .done-btn').click(function(e) {
+        OPT.doneFn(e);
+        if(OPT.wrapper) {
+            $('.modal-backdrop').remove();
+        }
+    });
+};
+module.exports = sfModal;
 
 });
 
