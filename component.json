@@ -7,7 +7,7 @@
     "eldargab/codemirror-markdown-mode": "*",
     "components/bootstrap": "^3.3.5",
     "components/bootstrap-default": "^3.3.5",
-    "segmentfault/hyperdown.js": "^0.1.2",
+    "segmentfault/hyperdown.js": "^0.1.4",
     "btd/highlightjs": "^7.5.0"
   },
   "scripts": [

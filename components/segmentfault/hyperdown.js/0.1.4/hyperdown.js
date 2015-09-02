@@ -965,7 +965,7 @@
 
 	            var _loop = function (key) {
 	                var line = lines[key];
-	                if (key === ignore) {
+	                if (parseInt(key) === ignore) {
 	                    head = false;
 	                    body = true;
 	                    return 'continue';
@@ -979,7 +979,7 @@
 	                    line = line.substr(1);
 
 	                    if (line[line.length - 1] === '|') {
-	                        line = line.substr(0, -1);
+	                        line = line.slice(0, -1);
 	                    }
 	                }
 
@@ -1343,7 +1343,6 @@
 
 	exports['default'] = Parser;
 	module.exports = exports['default'];
-	window.HyperDown = Parser;
 
 /***/ },
 /* 1 */
