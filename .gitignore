@@ -3,7 +3,7 @@
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
 ## Build generated
-build/
+
 DerivedData
 
 ## Various settings
@@ -18,7 +18,7 @@ DerivedData
 xcuserdata
 
 # node
-node_modules 
+node_modules
 
 ## Other
 *.xccheckout
