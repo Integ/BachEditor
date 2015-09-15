@@ -1,6 +1,6 @@
 'use strict';
 var $ = require('jquery');
-// require('bootstrap');
+require('bootstrap');
 
 function temp(template, data) {
     var str = template || '';
