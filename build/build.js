@@ -20441,24 +20441,25 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'makeFootnotes',
 	        value: function makeFootnotes(html) {
+	            var _this2 = this;
+
 	            if (this.footnotes.length > 0) {
-	                html += '<div class="footnotes"><hr><ol>';
-	                var index = 1;
-	                var val = this.footnotes.pop();
-	                while (val) {
-	                    if (typeof val === 'string') {
-	                        val += ' <a href="#fnref-' + index + '" class="footnote-backref">&#8617;</a>';
-	                    } else {
-	                        val[val.length - 1] += ' <a href="#fnref-' + index + '" class="footnote-backref">&#8617;</a>';
-	                        val = val.length > 1 ? this.parse(val.join("\n")) : this.parseInline(val[0]);
-	                    }
+	                (function () {
+	                    html += '<div class="footnotes"><hr><ol>';
+	                    var index = 1;
+	                    _this2.footnotes.forEach(function (val) {
+	                        if (typeof val === 'string') {
+	                            val += ' <a href="#fnref-' + index + '" class="footnote-backref">&#8617;</a>';
+	                        } else {
+	                            val[val.length - 1] += ' <a href="#fnref-' + index + '" class="footnote-backref">&#8617;</a>';
+	                            val = val.length > 1 ? _this2.parse(val.join("\n")) : _this2.parseInline(val[0]);
+	                        }
 
-	                    html += '<li id="fn-' + index + '">' + val + '</li>';
-
-	                    index++;
-	                    val = this.footnotes.pop();
-	                }
-	                html += '</ol></div>';
+	                        html += '<li id="fn-' + index + '">' + val + '</li>';
+	                        index++;
+	                    });
+	                    html += '</ol></div>';
+	                })();
 	            }
 	            return html;
 	        }
@@ -20472,7 +20473,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parse',
 	        value: function parse(text) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            var lines = text.split("\n");
 	            var blocks = this.parseBlock(text, lines);
@@ -20489,9 +20490,9 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                var extract = lines.slice(start, end + 1);
 	                var method = 'parse' + type.slice(0, 1).toUpperCase() + type.slice(1);
 	                var beforeMethod = 'beforeParse' + type.slice(0, 1).toUpperCase() + type.slice(1);
-	                extract = _this2.call(beforeMethod, extract, value);
-	                var result = _this2[method](extract, value);
-	                result = _this2.call('after' + method.slice(0, 1).toUpperCase() + method.slice(1), result, value);
+	                extract = _this3.call(beforeMethod, extract, value);
+	                var result = _this3[method](extract, value);
+	                result = _this3.call('after' + method.slice(0, 1).toUpperCase() + method.slice(1), result, value);
 
 	                html += result;
 	            });
@@ -20508,23 +20509,20 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	         */
 	    }, {
 	        key: 'call',
-	        value: function call(type) {
-	            for (var _len = arguments.length, value = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	                value[_key - 1] = arguments[_key];
-	            }
-
+	        value: function call(type, value) {
 	            if (!this.hooks[type]) {
-	                return value[0];
+	                return value;
 	            }
 
-	            var args = value;
+	            var args = [].slice.call(arguments);
+	            args = args.slice(1);
 
 	            this.hooks[type].forEach(function (callback) {
-	                value = callback(args);
+	                value = callback.apply(null, args);
 	                args[0] = value;
 	            });
 
-	            return value[0];
+	            return value;
 	        }
 
 	        /**
@@ -20562,7 +20560,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseInline',
 	        value: function parseInline(text) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var whiteList = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 	            var clearHolders = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
@@ -20576,15 +20574,15 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 
 	            // link
 	            text = text.replace(/<(https?:\/\/.+)>/ig, function (match, p1) {
-	                return _this3.makeHolder('<a href="' + p1 + '">' + p1 + '</a>');
+	                return _this4.makeHolder('<a href="' + p1 + '">' + p1 + '</a>');
 	            });
 
 	            text = text.replace(/<(\/?)([a-z0-9-]+)(\s+[^>]*)?>/ig, function (match, p1, p2, p3) {
-	                var whiteLists = _this3.commonWhiteList + '|' + whiteList;
+	                var whiteLists = _this4.commonWhiteList + '|' + whiteList;
 	                if (whiteLists.toLowerCase().indexOf(p2.toLowerCase()) !== -1) {
-	                    return _this3.makeHolder(match);
+	                    return _this4.makeHolder(match);
 	                } else {
-	                    return _this3.htmlspecialchars(match);
+	                    return _this4.htmlspecialchars(match);
 	                }
 	            });
 
@@ -20597,22 +20595,22 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                var id = _this.footnotes.indexOf(p1);
 
 	                if (id === -1) {
-	                    id = _this.footnotes.length + 1;
-	                    _this.footnotes[id] = _this3.parseInline(p1, '', false);
+	                    id = _this.footnotes.length;
+	                    _this.footnotes.push(_this4.parseInline(p1, '', false));
 	                }
 
-	                return _this.makeHolder('<sup id="fnref-' + id + '"><a href="#fn-' + id + '" class="footnote-ref">' + id + '</a></sup>');
+	                return _this.makeHolder('<sup id="fnref-' + (id + 1) + '"><a href="#fn-' + (id + 1) + '" class="footnote-ref">' + (id + 1) + '</a></sup>');
 	            });
 
 	            // image
-	            var imagePattern1 = /!\[((?:[^\]]|\]|\[)*?)\]\(((?:[^\)]|\)|\()+?)\)/;
+	            var imagePattern1 = /!\[((?:[^\]]|\]|\[)*?)\]\(((?:[^\)]|\)|\()+?)\)/g;
 	            text = text.replace(imagePattern1, function (match, p1, p2) {
 	                var escaped = _this.escapeBracket(p1);
 	                var url = _this.escapeBracket(p2);
 	                return _this.makeHolder('<img src="' + url + '" alt="' + escaped + '" title="' + escaped + '">');
 	            });
 
-	            var imagePattern2 = /!\[((?:[^\]]|\]|\[)*?)\]\[((?:[^\]]|\]|\[)+?)\]/;
+	            var imagePattern2 = /!\[((?:[^\]]|\]|\[)*?)\]\[((?:[^\]]|\]|\[)+?)\]/g;
 	            text = text.replace(imagePattern2, function (match, p1, p2) {
 	                var escaped = _this.escapeBracket(p1);
 	                var result = '';
@@ -20625,14 +20623,14 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	            });
 
 	            // link
-	            var linkPattern1 = /\[((?:[^\]]|\]|\[)+?)\]\(((?:[^\)]|\)|\()+?)\)/;
+	            var linkPattern1 = /\[((?:[^\]]|\]|\[)+?)\]\(((?:[^\)]|\)|\()+?)\)/g;
 	            text = text.replace(linkPattern1, function (match, p1, p2) {
 	                var escaped = _this.parseInline(_this.escapeBracket(p1), '', false);
 	                var url = _this.escapeBracket(p2);
 	                return _this.makeHolder('<a href="' + url + '">' + escaped + '</a>');
 	            });
 
-	            var linkPattern2 = /\[((?:[^\]]|\]|\[)+?)\]\[((?:[^\]]|\]|\[)+?)\]/;
+	            var linkPattern2 = /\[((?:[^\]]|\]|\[)+?)\]\[((?:[^\]]|\]|\[)+?)\]/g;
 	            text = text.replace(linkPattern2, function (match, p1, p2) {
 	                var escaped = _this.parseInline(_this.escapeBracket(p1), '', false);
 
@@ -20647,13 +20645,6 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	            });
 
 	            // strong and em and some fuck
-	            // text = text.replace(/(\*{3})(.+?)\1/g, "<strong><em>$2</em></strong>")
-	            // text = text.replace(/(\*{2})(.+?)\1/g, "<strong>$2</strong>")
-	            // text = text.replace(/(\*)(.+?)\1/g, "<em>$2</em>")
-	            // text = text.replace(/(\s+)(_{3})(.+?)\2(\s+)/g, "$1<strong><em>$3</em></strong>$4")
-	            // text = text.replace(/(\s+)(_{2})(.+?)\2(\s+)/g, "$1<strong>$3</strong>$4")
-	            // text = text.replace(/(\s+)(_)(.+?)\2(\s+)/g, "$1<em>$3</em>$4")
-	            // text = text.replace(/(~{2})(.+?)\1/g, "<del>$2</del>")
 	            text = this.parseInlineCallback(text);
 	            text = text.replace(/<([_a-z0-9-\.\+]+@[^@]+\.[a-z]{2,})>/ig, "<a href=\"mailto:$1\">$1</a>");
 
@@ -20677,34 +20668,34 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseInlineCallback',
 	        value: function parseInlineCallback(text) {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            text = text.replace(/(\*{3})(.+?)\1/g, function (match, p1, p2) {
-	                return '<strong><em>' + _this4.parseInlineCallback(p2) + '</em></strong>';
+	                return '<strong><em>' + _this5.parseInlineCallback(p2) + '</em></strong>';
 	            });
 
 	            text = text.replace(/(\*{2})(.+?)\1/g, function (match, p1, p2) {
-	                return '<strong>' + _this4.parseInlineCallback(p2) + '</strong>';
+	                return '<strong>' + _this5.parseInlineCallback(p2) + '</strong>';
 	            });
 
 	            text = text.replace(/(\*)(.+?)\1/g, function (match, p1, p2) {
-	                return '<em>' + _this4.parseInlineCallback(p2) + '</em>';
+	                return '<em>' + _this5.parseInlineCallback(p2) + '</em>';
 	            });
 
 	            text = text.replace(/(\s+|^)(_{3})(.+?)\2(\s+|$)/g, function (match, p1, p2, p3, p4) {
-	                return p1 + '<strong><em>' + _this4.parseInlineCallback(p3) + '</em></strong>' + p4;
+	                return p1 + '<strong><em>' + _this5.parseInlineCallback(p3) + '</em></strong>' + p4;
 	            });
 
 	            text = text.replace(/(\s+|^)(_{2})(.+?)\2(\s+|$)/g, function (match, p1, p2, p3, p4) {
-	                return p1 + '<strong>' + _this4.parseInlineCallback(p3) + '</strong>' + p4;
+	                return p1 + '<strong>' + _this5.parseInlineCallback(p3) + '</strong>' + p4;
 	            });
 
 	            text = text.replace(/(\s+|^)(_)(.+?)\2(\s+|$)/g, function (match, p1, p2, p3, p4) {
-	                return p1 + '<em>' + _this4.parseInlineCallback(p3) + '</em>' + p4;
+	                return p1 + '<em>' + _this5.parseInlineCallback(p3) + '</em>' + p4;
 	            });
 
 	            text = text.replace(/(~{2})(.+?)\1/g, function (match, p1, p2) {
-	                return '<del>' + _this4.parseInlineCallback(p2) + '</del>';
+	                return '<del>' + _this5.parseInlineCallback(p2) + '</del>';
 	            });
 	            return text;
 	        }
@@ -20719,7 +20710,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseBlock',
 	        value: function parseBlock(text, lines) {
-	            var _this5 = this;
+	            var _this6 = this;
 
 	            this.blocks = [];
 	            this.current = 'normal';
@@ -20834,14 +20825,14 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                        var tableMatches = /^((?:(?:(?:[ :]*\-[ :]*)+(?:\||\+))|(?:(?:\||\+)(?:[ :]*\-[ :]*)+)|(?:(?:[ :]*\-[ :]*)+(?:\||\+)(?:[ :]*\-[ :]*)+))+)$/g.exec(line);
 	                        if (this.isBlock('normal')) {
 	                            (function () {
-	                                var block = _this5.getBlock();
+	                                var block = _this6.getBlock();
 	                                var head = false;
 
 	                                if (block.length === 0 || block[0] !== 'normal' || /^\s*$/.test(lines[block[2]])) {
-	                                    _this5.startBlock('table', key);
+	                                    _this6.startBlock('table', key);
 	                                } else {
 	                                    head = true;
-	                                    _this5.backBlock(1, 'table');
+	                                    _this6.backBlock(1, 'table');
 	                                }
 
 	                                if (tableMatches[1][0] == '|') {
@@ -20870,7 +20861,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                                    aligns.push(align);
 	                                });
 
-	                                _this5.setBlock(key, [head, aligns]);
+	                                _this6.setBlock(key, [head, aligns]);
 	                            })();
 	                        }
 	                        break;
@@ -21009,9 +21000,9 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                    var types = ['list', 'quote'];
 
 	                    if (from === to && lines[from].match(/^\s*$/) && prevBlock && nextBlock) {
-	                        if (prevBlock[0] == nextBlock[0] && types.indexOf(prevBlock[0] !== -1)) {
+	                        if (prevBlock[0] == nextBlock[0] && types.indexOf(prevBlock[0]) !== -1) {
 	                            // combine 3 blocks
-	                            blocks[key - 1] = [prevBlock[0], prevBlock[1], nextBlock[2], NULL];
+	                            blocks[key - 1] = [prevBlock[0], prevBlock[1], nextBlock[2], null];
 	                            blocks.splice(key, 2);
 	                        }
 	                    }
@@ -21062,10 +21053,10 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parsePre',
 	        value: function parsePre(lines) {
-	            var _this6 = this;
+	            var _this7 = this;
 
 	            lines.forEach(function (line, ind) {
-	                lines[ind] = _this6.htmlspecialchars(line.substr(4));
+	                lines[ind] = _this7.htmlspecialchars(line.substr(4));
 	            });
 	            var str = lines.join('\n');
 
@@ -21137,7 +21128,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseList',
 	        value: function parseList(lines) {
-	            var _this7 = this;
+	            var _this8 = this;
 
 	            var html = '';
 	            var minSpace = 99999;
@@ -21184,7 +21175,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                        leftLines.push(line.replace(pattern, ''));
 	                    } else {
 	                        if (leftLines.length) {
-	                            html += "<li>" + _this7.parse(leftLines.join("\n")) + "</li>";
+	                            html += "<li>" + _this8.parse(leftLines.join("\n")) + "</li>";
 	                        }
 	                        if (lastType !== type) {
 	                            if (lastType.length) {
@@ -21218,7 +21209,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseTable',
 	        value: function parseTable(lines, value) {
-	            var _this8 = this;
+	            var _this9 = this;
 
 	            var _value = _slicedToArray(value, 2);
 
@@ -21297,7 +21288,7 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	                        html += ' align="' + aligns[key] + '"';
 	                    }
 
-	                    html += '>' + _this8.parseInline(text) + ('</' + tag + '>');
+	                    html += '>' + _this9.parseInline(text) + ('</' + tag + '>');
 	                });
 
 	                html += '</tr>';
@@ -21310,9 +21301,9 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	            };
 
 	            for (var key in lines) {
-	                var _ret2 = _loop(key);
+	                var _ret3 = _loop(key);
 
-	                if (_ret2 === 'continue') continue;
+	                if (_ret3 === 'continue') continue;
 	            }
 
 	            if (body !== null) {
@@ -21343,10 +21334,10 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseNormal',
 	        value: function parseNormal(lines) {
-	            var _this9 = this;
+	            var _this10 = this;
 
 	            lines = lines.map(function (line) {
-	                return _this9.parseInline(line);
+	                return _this10.parseInline(line);
 	            });
 
 	            var str = lines.join("\n").trim();
@@ -21404,10 +21395,10 @@ require.register("segmentfault~hyperdown.js@0.1.7", function (exports, module) {
 	    }, {
 	        key: 'parseHtml',
 	        value: function parseHtml(lines, type) {
-	            var _this10 = this;
+	            var _this11 = this;
 
 	            lines.forEach(function (line) {
-	                line = _this10.parseInline(line, _this10.specialWhiteList[type] ? _this10.specialWhiteList[type] : '');
+	                line = _this11.parseInline(line, _this11.specialWhiteList[type] ? _this11.specialWhiteList[type] : '');
 	            });
 
 	            return lines.join("\n");

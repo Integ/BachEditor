@@ -531,11 +531,11 @@ p.tagline {
   height: 0;
   display: block;
   position: absolute;
-  top: -15px;
+  top: 49px;
   right: 0;
-  transform: rotate(45deg);
-  -ms-transform: rotate(45deg);  /* IE9 */
-  -webkit-transform: rotate(45deg); /* 2014 current */
+  transform: rotate(135deg);
+  -ms-transform: rotate(135deg);  /* IE9 */
+  -webkit-transform: rotate(135deg); /* 2014 current */
 }
 
 .download-bar .avatar {
