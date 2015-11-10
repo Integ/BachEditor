@@ -11,10 +11,12 @@
  **/
 
 var $ = require("jquery");
-var marked = require('marked');
+require('hyperdown');
+var hyperdown = new HyperDown();
 var highLight = require('./highlight');
-require("codemirror");
+require('codemirror');
 require('codemirror-markdown-mode');
+var sfModal = require('./modal');
 
 /**
  * Interface of Editor.
@@ -127,7 +129,7 @@ Editor.prototype.getVal = function() {
  **/
 Editor.prototype.getHTML = function() {
     var cm = this.codemirror;
-    return marked(cm.getValue());
+    return hyperdown.makeHtml(cm.getValue());
 };
 
 /**
@@ -208,14 +210,14 @@ Editor.prototype.render = function(el, mode, callback) {
         if($('#editorLive').length) {
             parserDelay = setTimeout(function() {
                 var text = cm.getValue();
-                $('#editorLive').html(marked(text));
+                $('#editorLive').html(hyperdown.makeHtml(text));
                 highLight($('#editorLive'));
             }, 500);
         }
         if($('.editor-preview-active.onlive').length) {
             parserDelay = setTimeout(function() {
                 var text = cm.getValue();
-                $('.editor-preview-active.onlive').html(marked(text));
+                $('.editor-preview-active.onlive').html(hyperdown.makeHtml(text));
                 highLight($('.editor-preview-active.onlive'));
             }, 500);
         }
@@ -1595,7 +1597,7 @@ function goPreview(editor) {
              $(preview).addClass('editor-preview-active')
          }, 1);
     } else {
-        preview.innerHTML = marked(text);
+        preview.innerHTML = hyperdown.makeHtml(text);
         highLight($(preview));
                 /* When the preview button is clicked for the first time,
                  * give some time for the transition from editor.css to fire and the view to slide from right to left,
@@ -1652,7 +1654,7 @@ function goLive(editor) {
             $('.CodeMirror-code').css('width', _w);
         }, 1);
     } else {
-        preview.innerHTML = marked(text);
+        preview.innerHTML = hyperdown.makeHtml(text);
         setTimeout(function() {
             $(preview).addClass('editor-preview-active onlive');
             // var _w = $('.CodeMirror-code').width() / 2 - 15 + 'px';

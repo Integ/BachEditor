@@ -1,0 +1,17 @@
+{
+  "name": "hyperdown",
+  "version": "0.0.1",
+  "description": "A markdown parser",
+  "keywords": [
+    "markdown",
+    "hyperdown",
+    "html"
+  ],
+  "scripts": [
+    "dist/Parser.js"
+  ],
+  "main": "dist/Parser.js",
+  "license": "BSD-4-Clause",
+  "repository": "segmentfault/hyperdown.js",
+  "resolved": "f67d83a961c8155f2a5199f0933dcf371870d68c"
+}
