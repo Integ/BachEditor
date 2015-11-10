@@ -7,5 +7,6 @@
   "license": "MIT",
   "ignore": [
     "components"
-  ]
+  ],
+  "main": "build/build.js"
 }
