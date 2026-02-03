@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { EditorView, basicSetup } from 'codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -9,11 +9,15 @@ import { autocompletion } from '@codemirror/autocomplete';
 import { useEditorStore } from '../store/editorStore';
 import { audioEngine } from '../lib/audioEngine';
 
+export interface EditorHandle {
+  getEditorView: () => EditorView | null;
+}
+
 interface EditorProps {
   className?: string;
 }
 
-export default function Editor({ className }: EditorProps) {
+export default forwardRef<EditorHandle, EditorProps>(function Editor({ className }: EditorProps, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const { content, setContent, isSoundEnabled } = useEditorStore();
@@ -87,6 +91,10 @@ export default function Editor({ className }: EditorProps) {
 
     playKeySound();
   };
+
+  useImperativeHandle(ref, () => ({
+    getEditorView: () => viewRef.current,
+  }));
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -164,4 +172,4 @@ export default function Editor({ className }: EditorProps) {
   }, [content]);
 
   return <div ref={containerRef} className={className} />;
-}
+});

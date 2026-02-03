@@ -1,69 +1,100 @@
-import { useCallback } from 'react';
-import Editor from './components/Editor';
+import { useCallback, useRef } from 'react';
+import Editor, { EditorHandle } from './components/Editor';
 import Preview from './components/Preview';
 import Toolbar from './components/Toolbar';
 import { useEditorStore } from './store/editorStore';
 import { audioEngine } from './lib/audioEngine';
 
 export default function App() {
-  const { content, setContent, isPreviewVisible, togglePreview } = useEditorStore();
+  const { isPreviewVisible, togglePreview } = useEditorStore();
+  const editorRef = useRef<EditorHandle>(null);
 
   const handleFormat = useCallback((type: string) => {
-    const start = 0;
-    const end = content.length;
-    const selectedText = '';
+    if (!editorRef.current) return;
 
-    let newText = content;
+    const view = editorRef.current.getEditorView();
+    if (!view) return;
+
+    const selection = view.state.selection.main;
+    const selectedText = view.state.sliceDoc(selection.from, selection.to);
+
+    let insertText = '';
+    let cursorOffset = 0;
 
     switch (type) {
       case 'bold':
-        newText = content.substring(0, start) + `**${selectedText || '加粗文字'}**` + content.substring(end);
+        insertText = `**${selectedText || '加粗文字'}**`;
+        cursorOffset = selectedText ? 0 : 2;
         break;
       case 'italic':
-        newText = content.substring(0, start) + `*${selectedText || '斜体文字'}*` + content.substring(end);
+        insertText = `*${selectedText || '斜体文字'}*`;
+        cursorOffset = selectedText ? 0 : 1;
         break;
       case 'h1':
-        newText = content.substring(0, start) + `# ${selectedText || '一级标题'}` + content.substring(end);
+        insertText = `# ${selectedText || '一级标题'}`;
+        cursorOffset = 0;
         break;
       case 'h2':
-        newText = content.substring(0, start) + `## ${selectedText || '二级标题'}` + content.substring(end);
+        insertText = `## ${selectedText || '二级标题'}`;
+        cursorOffset = 0;
         break;
       case 'h3':
-        newText = content.substring(0, start) + `### ${selectedText || '三级标题'}` + content.substring(end);
+        insertText = `### ${selectedText || '三级标题'}`;
+        cursorOffset = 0;
         break;
       case 'ul':
-        newText = content.substring(0, start) + `- ${selectedText || '列表项'}` + content.substring(end);
+        insertText = `- ${selectedText || '列表项'}`;
+        cursorOffset = 0;
         break;
       case 'ol':
-        newText = content.substring(0, start) + `1. ${selectedText || '列表项'}` + content.substring(end);
+        insertText = `1. ${selectedText || '列表项'}`;
+        cursorOffset = 0;
         break;
       case 'quote':
-        newText = content.substring(0, start) + `> ${selectedText || '引用内容'}` + content.substring(end);
+        insertText = `> ${selectedText || '引用内容'}`;
+        cursorOffset = 0;
         break;
       case 'code':
         if (selectedText) {
-          newText = content.substring(0, start) + '```\n' + selectedText + '\n```' + content.substring(end);
+          insertText = '```\n' + selectedText + '\n```';
+          cursorOffset = 0;
         } else {
-          newText = content.substring(0, start) + '`代码`' + content.substring(end);
+          insertText = '`代码`';
+          cursorOffset = 1;
         }
         break;
       case 'link':
-        newText = content.substring(0, start) + `[${selectedText || '链接文本'}](url)` + content.substring(end);
+        insertText = `[${selectedText || '链接文本'}](url)`;
+        cursorOffset = 1 + (selectedText?.length || 4);
         break;
       case 'image':
-        newText = content.substring(0, start) + `![${selectedText || '图片描述'}](url)` + content.substring(end);
+        insertText = `![${selectedText || '图片描述'}](url)`;
+        cursorOffset = 2 + (selectedText?.length || 4);
         break;
     }
 
-    setContent(newText);
-  }, [content, setContent]);
+    const transaction = view.state.update({
+      changes: {
+        from: selection.from,
+        to: selection.to,
+        insert: insertText,
+      },
+      selection: {
+        anchor: selection.from + insertText.length - cursorOffset,
+        head: selection.from + insertText.length - cursorOffset,
+      },
+    });
+
+    view.dispatch(transaction);
+    view.focus();
+  }, []);
 
   return (
     <div className="editor-container">
       <Toolbar onFormat={handleFormat} />
       <div className="editor-split">
         <div className="editor-pane">
-          <Editor />
+          <Editor ref={editorRef} />
         </div>
         {isPreviewVisible && <Preview />}
       </div>
