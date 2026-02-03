@@ -1,0 +1,179 @@
+class AudioEngine {
+  private audioContext: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private activeOscillators: Map<string, OscillatorNode[]> = new Map();
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'AudioContext' in window) {
+      this.audioContext = new AudioContext();
+      this.masterGain = this.audioContext.createGain();
+      this.masterGain.connect(this.audioContext.destination);
+      this.masterGain.gain.value = 0.3;
+    }
+  }
+
+  private async ensureContext(): Promise<AudioContext | null> {
+    if (!this.audioContext) return null;
+
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+
+    return this.audioContext;
+  }
+
+  private getContext(): AudioContext | null {
+    return this.audioContext;
+  }
+
+  async initialize(): Promise<void> {
+    await this.ensureContext();
+  }
+
+  playNote(frequency: number, duration: number = 0.3, type: OscillatorType = 'sine') {
+    const ctx = this.getContext();
+    if (!ctx || !this.masterGain) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.masterGain);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + duration);
+
+    const key = `${frequency}-${type}`;
+    if (!this.activeOscillators.has(key)) {
+      this.activeOscillators.set(key, []);
+    }
+    this.activeOscillators.get(key)!.push(oscillator);
+
+    setTimeout(() => {
+      const oscillators = this.activeOscillators.get(key);
+      if (oscillators) {
+        const index = oscillators.indexOf(oscillator);
+        if (index > -1) {
+          oscillators.splice(index, 1);
+        }
+      }
+    }, duration * 1000);
+  }
+
+  playChord(frequencies: number[], duration: number = 0.5) {
+    frequencies.forEach(freq => {
+      this.playNote(freq, duration);
+    });
+  }
+
+  playPentatonic(keyIndex: number) {
+    const pentatonicScale = [
+      261.63,
+      293.66,
+      329.63,
+      392.00,
+      440.00,
+      523.25,
+      587.33,
+      659.25,
+      783.99,
+      880.00
+    ];
+
+    const index = keyIndex % pentatonicScale.length;
+    const frequency = pentatonicScale[index];
+    
+    this.playNote(frequency, 0.25, 'sine');
+  }
+
+  playMarimba(keyIndex: number) {
+    const marimbaScale = [
+      261.63,
+      277.18,
+      293.66,
+      311.13,
+      329.63,
+      349.23,
+      369.99,
+      392.00,
+      415.30,
+      440.00,
+      466.16,
+      493.88,
+      523.25
+    ];
+
+    const index = keyIndex % marimbaScale.length;
+    const frequency = marimbaScale[index];
+
+    const ctx = this.getContext();
+    if (!ctx || !this.masterGain) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(frequency * 4, ctx.currentTime);
+    filter.Q.setValueAtTime(2, ctx.currentTime);
+
+    gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+    oscillator.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.masterGain);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.5);
+  }
+
+  playTypingTone(charCode: number) {
+    const tones = [261.63, 293.66, 329.63, 349.23, 392.00];
+    const index = charCode % tones.length;
+    const frequency = tones[index];
+    
+    this.playNote(frequency, 0.15, 'triangle');
+  }
+
+  playSpaceTone() {
+    this.playChord([261.63, 329.63, 392.00], 0.3);
+  }
+
+  setVolume(value: number) {
+    if (this.masterGain) {
+      this.masterGain.gain.setValueAtTime(Math.max(0, Math.min(1, value)), this.audioContext!.currentTime);
+    }
+  }
+
+  getVolume(): number {
+    return this.masterGain ? this.masterGain.gain.value : 0;
+  }
+
+  cleanup() {
+    this.activeOscillators.forEach(oscillators => {
+      oscillators.forEach(osc => {
+        try {
+          osc.stop();
+        } catch (e) {
+        }
+      });
+    });
+    this.activeOscillators.clear();
+    
+    if (this.audioContext) {
+      this.audioContext.close();
+    }
+  }
+}
+
+export const audioEngine = new AudioEngine();

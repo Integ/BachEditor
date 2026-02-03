@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toolbar-button:active {
+  transform: scale(0.95);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  margin: 0 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.editor-split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-pane {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #1a202c;
+}
+
+.preview-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.preview-content h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.preview-content h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.preview-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.preview-content p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+}
+
+.preview-content ul,
+.preview-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.preview-content li {
+  margin-bottom: 0.5rem;
+}
+
+.preview-content blockquote {
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background: #f7fafc;
+  border-left: 4px solid #667eea;
+  font-style: italic;
+}
+
+.preview-content code {
+  padding: 0.125rem 0.375rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875em;
+  background: #edf2f7;
+  border-radius: 0.25rem;
+}
+
+.preview-content pre {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  background: #1a202c;
+  border-radius: 0.5rem;
+}
+
+.preview-content pre code {
+  padding: 0;
+  color: #e2e8f0;
+  background: transparent;
+}
+
+.preview-content a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.preview-content a:hover {
+  text-decoration: underline;
+}
+
+.preview-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sound-toggle.active {
+  background: rgba(16, 185, 129, 0.8);
+  border-color: rgba(16, 185, 129, 0.8);
+}
+
+@media (max-width: 768px) {
+  .editor-split {
+    flex-direction: column;
+  }
+  
+  .editor-pane,
+  .preview-pane {
+    flex: none;
+    height: 50%;
+  }
+}
