@@ -10,6 +10,7 @@ inspire by [Lepture's Editor](http://lab.lepture.com/editor/)
 一个有情怀的编辑器。Bach's Editor.
 
 ##开发者使用方法##
+
 ```
 npm install 
 npm start dev
