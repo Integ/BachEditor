@@ -64,6 +64,28 @@ body {
   transform: scale(0.95);
 }
 
+.toolbar-button select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.toolbar-button select option {
+  background: #242424;
+  color: rgba(255,255,255,0.9);
+}
+
+.toolbar-button select:focus {
+  outline: none;
+}
+
 .toolbar-divider {
   width: 1px;
   height: 1.5rem;

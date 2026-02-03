@@ -19,6 +19,7 @@ export default function Editor({ className }: EditorProps) {
   const { content, setContent, isSoundEnabled, soundType } = useEditorStore();
   const keyIndexRef = useRef(0);
   const [audioInitialized, setAudioInitialized] = useState(false);
+  const isComposingRef = useRef(false);
   
   const isSoundEnabledRef = useRef(isSoundEnabled);
   const soundTypeRef = useRef(soundType);
@@ -31,6 +32,32 @@ export default function Editor({ className }: EditorProps) {
     soundTypeRef.current = soundType;
   }, [soundType]);
 
+  const playKeySound = () => {
+    if (!audioInitialized) {
+      audioEngine.initialize();
+      setAudioInitialized(true);
+    }
+
+    if (!isSoundEnabledRef.current) return;
+
+    const currentSoundType = soundTypeRef.current;
+    const charCode = keyIndexRef.current;
+
+    switch (currentSoundType) {
+      case 'piano':
+        audioEngine.playPentatonic(charCode);
+        break;
+      case 'marimba':
+        audioEngine.playMarimba(charCode);
+        break;
+      case 'typing':
+        audioEngine.playTypingTone(charCode);
+        break;
+    }
+
+    keyIndexRef.current++;
+  };
+
   const handleKeystroke = (event: KeyboardEvent) => {
     if (!audioInitialized) {
       audioEngine.initialize();
@@ -38,30 +65,44 @@ export default function Editor({ className }: EditorProps) {
     }
 
     if (!isSoundEnabledRef.current) return;
-    if (event.key === 'Backspace' || event.key === 'Delete') return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-
-    const currentSoundType = soundTypeRef.current;
 
     if (event.key === ' ') {
       audioEngine.playSpaceTone();
-    } else if (event.key.length === 1) {
-      const charCode = event.key.charCodeAt(0);
-
-      switch (currentSoundType) {
-        case 'piano':
-          audioEngine.playPentatonic(charCode);
-          break;
-        case 'marimba':
-          audioEngine.playMarimba(charCode);
-          break;
-        case 'typing':
-          audioEngine.playTypingTone(charCode);
-          break;
-      }
-
       keyIndexRef.current++;
+    } else {
+      playKeySound();
     }
+  };
+
+  const handleInput = (event: InputEvent) => {
+    if (isComposingRef.current) return;
+    
+    if (!audioInitialized) {
+      audioEngine.initialize();
+      setAudioInitialized(true);
+    }
+
+    if (!isSoundEnabledRef.current) return;
+    if (event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward') return;
+
+    playKeySound();
+  };
+
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+  };
+
+  const handleCompositionEnd = () => {
+    isComposingRef.current = false;
+    if (!audioInitialized) {
+      audioEngine.initialize();
+      setAudioInitialized(true);
+    }
+
+    if (!isSoundEnabledRef.current) return;
+
+    playKeySound();
   };
 
   useEffect(() => {
@@ -99,6 +140,18 @@ export default function Editor({ className }: EditorProps) {
         EditorView.domEventHandlers({
           keydown: (event: any) => {
             handleKeystroke(event);
+            return false;
+          },
+          input: (event: any) => {
+            handleInput(event);
+            return false;
+          },
+          compositionstart: () => {
+            handleCompositionStart();
+            return false;
+          },
+          compositionend: () => {
+            handleCompositionEnd();
             return false;
           },
         }),
