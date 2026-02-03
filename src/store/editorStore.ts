@@ -7,8 +7,6 @@ interface EditorStore {
   toggleSound: () => void;
   volume: number;
   setVolume: (volume: number) => void;
-  soundType: 'piano' | 'marimba' | 'typing';
-  setSoundType: (type: 'piano' | 'marimba' | 'typing') => void;
   isPreviewVisible: boolean;
   togglePreview: () => void;
 }
@@ -20,8 +18,6 @@ export const useEditorStore = create<EditorStore>((set) => ({
   toggleSound: () => set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
   volume: 0.3,
   setVolume: (volume) => set({ volume }),
-  soundType: 'marimba',
-  setSoundType: (soundType) => set({ soundType }),
   isPreviewVisible: true,
   togglePreview: () => set((state) => ({ isPreviewVisible: !state.isPreviewVisible })),
 }));

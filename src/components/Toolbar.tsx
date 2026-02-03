@@ -6,13 +6,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ onFormat }: ToolbarProps) {
-  const { isSoundEnabled, toggleSound, soundType, setSoundType, volume, setVolume } = useEditorStore();
-
-  const soundTypes = [
-    { id: 'piano', label: '🎹 钢琴' },
-    { id: 'marimba', label: '🎼 木琴' },
-    { id: 'typing', label: '⌨️ 打字机' },
-  ] as const;
+  const { isSoundEnabled, toggleSound, volume, setVolume } = useEditorStore();
 
   const formatButtons = [
     { type: 'bold', label: 'B', title: '加粗 (Ctrl+B)' },
@@ -44,7 +38,7 @@ export default function Toolbar({ onFormat }: ToolbarProps) {
     <div className="editor-toolbar">
       <div className="flex items-center flex-wrap gap-1">
         <h1 className="text-xl font-bold text-white mr-4">Bach's Editor</h1>
-        
+
         {formatButtons.map((button, index) => {
           if (button.type === 'divider') {
             return <div key={`divider-${index}`} className="toolbar-divider" />;
@@ -63,24 +57,6 @@ export default function Toolbar({ onFormat }: ToolbarProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-white text-sm">音效:</label>
-          <select
-            value={soundType}
-            onChange={async (e) => {
-              await audioEngine.initialize();
-              setSoundType(e.target.value as any);
-            }}
-            className="toolbar-button"
-          >
-            {soundTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="flex items-center gap-2">
           <label className="text-white text-sm">音量:</label>
           <input

@@ -16,21 +16,16 @@ interface EditorProps {
 export default function Editor({ className }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-  const { content, setContent, isSoundEnabled, soundType } = useEditorStore();
+  const { content, setContent, isSoundEnabled } = useEditorStore();
   const keyIndexRef = useRef(0);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const isComposingRef = useRef(false);
-  
+
   const isSoundEnabledRef = useRef(isSoundEnabled);
-  const soundTypeRef = useRef(soundType);
 
   useEffect(() => {
     isSoundEnabledRef.current = isSoundEnabled;
   }, [isSoundEnabled]);
-
-  useEffect(() => {
-    soundTypeRef.current = soundType;
-  }, [soundType]);
 
   const playKeySound = () => {
     if (!audioInitialized) {
@@ -40,20 +35,8 @@ export default function Editor({ className }: EditorProps) {
 
     if (!isSoundEnabledRef.current) return;
 
-    const currentSoundType = soundTypeRef.current;
     const charCode = keyIndexRef.current;
-
-    switch (currentSoundType) {
-      case 'piano':
-        audioEngine.playPentatonic(charCode);
-        break;
-      case 'marimba':
-        audioEngine.playMarimba(charCode);
-        break;
-      case 'typing':
-        audioEngine.playTypingTone(charCode);
-        break;
-    }
+    audioEngine.playMarimba(charCode);
 
     keyIndexRef.current++;
   };
@@ -77,7 +60,7 @@ export default function Editor({ className }: EditorProps) {
 
   const handleInput = (event: InputEvent) => {
     if (isComposingRef.current) return;
-    
+
     if (!audioInitialized) {
       audioEngine.initialize();
       setAudioInitialized(true);
