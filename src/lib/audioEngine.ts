@@ -178,7 +178,7 @@ class AudioEngine {
     const tones = [261.63, 293.66, 329.63, 349.23, 392.00];
     const index = charCode % tones.length;
     const frequency = tones[index];
-    
+
     this.playNote(frequency, 0.15, 'triangle');
   }
 
@@ -186,7 +186,7 @@ class AudioEngine {
     const frequency = this.marioMelody[this.marioNoteIndex % this.marioMelody.length];
     this.marioNoteIndex++;
 
-    this.playChord([frequency, frequency * 1.5], 0.3);
+    await this.playChord([frequency, frequency * 1.5], 0.3);
   }
 
   setVolume(value: number) {

@@ -126,19 +126,15 @@ export default forwardRef<EditorHandle, EditorProps>(function Editor({ className
         EditorView.domEventHandlers({
           keydown: (event: any) => {
             handleKeystroke(event);
-            return false;
           },
           input: (event: any) => {
             handleInput(event);
-            return false;
           },
           compositionstart: () => {
             handleCompositionStart();
-            return false;
           },
           compositionend: () => {
             handleCompositionEnd();
-            return false;
           },
         }),
       ],
