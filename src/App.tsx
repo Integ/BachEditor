@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
 import Toolbar from './components/Toolbar';
@@ -57,12 +57,6 @@ export default function App() {
 
     setContent(newText);
   }, [content, setContent]);
-
-  useEffect(() => {
-    return () => {
-      audioEngine.cleanup();
-    };
-  }, []);
 
   return (
     <div className="editor-container">

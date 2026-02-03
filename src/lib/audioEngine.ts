@@ -13,9 +13,18 @@ class AudioEngine {
   }
 
   private async ensureContext(): Promise<AudioContext | null> {
-    if (!this.audioContext) return null;
+    if (!this.audioContext || this.audioContext.state === 'closed') {
+      if (typeof window !== 'undefined' && 'AudioContext' in window) {
+        this.audioContext = new AudioContext();
+        this.masterGain = this.audioContext.createGain();
+        this.masterGain.connect(this.audioContext.destination);
+        this.masterGain.gain.value = 0.3;
+      } else {
+        return null;
+      }
+    }
 
-    if (this.audioContext.state === 'suspended') {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
     }
 
@@ -165,10 +174,6 @@ class AudioEngine {
       });
     });
     this.activeOscillators.clear();
-    
-    if (this.audioContext) {
-      this.audioContext.close();
-    }
   }
 }
 
