@@ -46,8 +46,8 @@ node_modules
 Carthage/Build
 
 # Component/bower directories
-components
-bower_components
+/components
+/bower_components
 
 # Build directories
 build
