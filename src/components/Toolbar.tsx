@@ -29,7 +29,7 @@ export default function Toolbar({ onFormat }: ToolbarProps) {
   const handleFormat = async (type: string) => {
     await audioEngine.initialize();
     if (isSoundEnabled) {
-      audioEngine.playNote(523.25, 0.1, 'sine');
+      audioEngine.playMarimba();
     }
     onFormat(type);
   };

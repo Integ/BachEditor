@@ -2,6 +2,54 @@ class AudioEngine {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private activeOscillators: Map<string, OscillatorNode[]> = new Map();
+  private marioNoteIndex: number = 0;
+
+  private readonly marioMelody: number[] = [
+    329.63,
+    329.63,
+    392.00,
+    392.00,
+    440.00,
+    440.00,
+    392.00,
+    349.23,
+    349.23,
+    329.63,
+    329.63,
+    293.66,
+    293.66,
+    261.63,
+    392.00,
+    392.00,
+    349.23,
+    349.23,
+    329.63,
+    329.63,
+    261.63,
+    261.63,
+    293.66,
+    261.63,
+    392.00,
+    349.23,
+    440.00,
+    440.00,
+    392.00,
+    349.23,
+    349.23,
+    329.63,
+    329.63,
+    261.63,
+    261.63,
+    293.66,
+    261.63,
+    523.25,
+    523.25,
+    493.88,
+    493.88,
+    440.00,
+    440.00,
+    392.00,
+  ];
 
   constructor() {
     if (typeof window !== 'undefined' && 'AudioContext' in window) {
@@ -97,25 +145,9 @@ class AudioEngine {
     this.playNote(frequency, 0.25, 'sine');
   }
 
-  async playMarimba(keyIndex: number) {
-    const marimbaScale = [
-      261.63,
-      277.18,
-      293.66,
-      311.13,
-      329.63,
-      349.23,
-      369.99,
-      392.00,
-      415.30,
-      440.00,
-      466.16,
-      493.88,
-      523.25
-    ];
-
-    const index = keyIndex % marimbaScale.length;
-    const frequency = marimbaScale[index];
+  async playMarimba() {
+    const frequency = this.marioMelody[this.marioNoteIndex % this.marioMelody.length];
+    this.marioNoteIndex++;
 
     const ctx = await this.ensureContext();
     if (!ctx || !this.masterGain) return;
@@ -150,8 +182,11 @@ class AudioEngine {
     this.playNote(frequency, 0.15, 'triangle');
   }
 
-  playSpaceTone() {
-    this.playChord([261.63, 329.63, 392.00], 0.3);
+  async playSpaceTone() {
+    const frequency = this.marioMelody[this.marioNoteIndex % this.marioMelody.length];
+    this.marioNoteIndex++;
+
+    this.playChord([frequency, frequency * 1.5], 0.3);
   }
 
   setVolume(value: number) {

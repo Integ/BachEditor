@@ -21,7 +21,6 @@ export default forwardRef<EditorHandle, EditorProps>(function Editor({ className
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const { content, setContent, isSoundEnabled } = useEditorStore();
-  const keyIndexRef = useRef(0);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const isComposingRef = useRef(false);
 
@@ -39,10 +38,7 @@ export default forwardRef<EditorHandle, EditorProps>(function Editor({ className
 
     if (!isSoundEnabledRef.current) return;
 
-    const charCode = keyIndexRef.current;
-    audioEngine.playMarimba(charCode);
-
-    keyIndexRef.current++;
+    audioEngine.playMarimba();
   };
 
   const handleKeystroke = (event: KeyboardEvent) => {
@@ -56,7 +52,6 @@ export default forwardRef<EditorHandle, EditorProps>(function Editor({ className
 
     if (event.key === ' ') {
       audioEngine.playSpaceTone();
-      keyIndexRef.current++;
     } else {
       playKeySound();
     }
