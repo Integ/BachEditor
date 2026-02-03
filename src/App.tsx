@@ -74,7 +74,10 @@ export default function App() {
         {isPreviewVisible && <Preview />}
       </div>
       <button
-        onClick={togglePreview}
+        onClick={async () => {
+          await audioEngine.initialize();
+          togglePreview();
+        }}
         className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-colors z-50"
       >
         {isPreviewVisible ? '隐藏预览' : '显示预览'}

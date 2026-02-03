@@ -22,16 +22,12 @@ class AudioEngine {
     return this.audioContext;
   }
 
-  private getContext(): AudioContext | null {
-    return this.audioContext;
-  }
-
   async initialize(): Promise<void> {
     await this.ensureContext();
   }
 
-  playNote(frequency: number, duration: number = 0.3, type: OscillatorType = 'sine') {
-    const ctx = this.getContext();
+  async playNote(frequency: number, duration: number = 0.3, type: OscillatorType = 'sine') {
+    const ctx = await this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
     const oscillator = ctx.createOscillator();
@@ -66,7 +62,7 @@ class AudioEngine {
     }, duration * 1000);
   }
 
-  playChord(frequencies: number[], duration: number = 0.5) {
+  async playChord(frequencies: number[], duration: number = 0.5) {
     frequencies.forEach(freq => {
       this.playNote(freq, duration);
     });
@@ -92,7 +88,7 @@ class AudioEngine {
     this.playNote(frequency, 0.25, 'sine');
   }
 
-  playMarimba(keyIndex: number) {
+  async playMarimba(keyIndex: number) {
     const marimbaScale = [
       261.63,
       277.18,
@@ -112,7 +108,7 @@ class AudioEngine {
     const index = keyIndex % marimbaScale.length;
     const frequency = marimbaScale[index];
 
-    const ctx = this.getContext();
+    const ctx = await this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
     const oscillator = ctx.createOscillator();
