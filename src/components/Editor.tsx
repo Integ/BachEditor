@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { EditorView, basicSetup } from 'codemirror';
 import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { keymap } from '@codemirror/view';
+import { keymap, placeholder } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
 import { search } from '@codemirror/search';
 import { autocompletion } from '@codemirror/autocomplete';
@@ -99,36 +98,60 @@ export default forwardRef<EditorHandle, EditorProps>(function Editor({ className
       extensions: [
         basicSetup,
         markdown(),
-        oneDark,
         keymap.of(defaultKeymap),
         search(),
         autocompletion(),
+        EditorView.lineWrapping,
+        placeholder('从这里开始写你的 AI 对话上下文、需求和约束...'),
         EditorView.theme({
           '&': {
-            fontSize: '16px',
+            height: '100%',
+            fontSize: '15px',
+            backgroundColor: 'transparent',
           },
           '.cm-content': {
-            fontFamily: '"Fira Code", monospace',
-            padding: '1rem',
+            fontFamily: '"JetBrains Mono", "Fira Code", ui-monospace, monospace',
+            padding: '1rem 1.1rem 1.5rem',
+            lineHeight: '1.75',
+            caretColor: '#f8fafc',
+          },
+          '.cm-line': {
+            padding: '0',
           },
           '.cm-scroller': {
             overflow: 'auto',
+            fontFamily: 'inherit',
           },
           '.cm-editor': {
             height: '100%',
+            borderRadius: '14px',
+          },
+          '.cm-gutters': {
+            backgroundColor: 'transparent',
+            color: '#64748b',
+            border: 'none',
+          },
+          '.cm-activeLine': {
+            backgroundColor: 'rgba(148, 163, 184, 0.12)',
+          },
+          '.cm-activeLineGutter': {
+            backgroundColor: 'transparent',
+          },
+          '.cm-selectionBackground': {
+            backgroundColor: 'rgba(14, 165, 233, 0.25) !important',
           },
         }),
-        EditorView.updateListener.of((update: any) => {
+        EditorView.updateListener.of((update) => {
           if (update.docChanged) {
-            setContent(view.state.doc.toString());
+            setContent(update.state.doc.toString());
           }
         }),
         EditorView.domEventHandlers({
-          keydown: (event: any) => {
-            handleKeystroke(event);
+          keydown: (event) => {
+            handleKeystroke(event as KeyboardEvent);
           },
-          input: (event: any) => {
-            handleInput(event);
+          input: (event) => {
+            handleInput(event as InputEvent);
           },
           compositionstart: () => {
             handleCompositionStart();
